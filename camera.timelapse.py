@@ -35,7 +35,12 @@ try:
 except:
 	framerate = 60
 
+	
+renderVideo = args.renderVideo or True
+if renderVideo != False
+	renderVideo = True
 
+	
 outputFolder = args.outputFolder or "dcim/"
 if outputFolder.endswith('/') == False:
 	outputFolder = outputFolder+"/"
@@ -110,7 +115,7 @@ try:
 	captureThread = threading.Thread(captureTimelapse, args=(,))
 	captureThread.start()
 
-	while True:
+	while renderVideo:
 		yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
 		yesterdayStamp = yesterday.strftime("%Y%m%d")
 		if exists(outputFolder + yesterdayStamp + ".mp4") == False:
