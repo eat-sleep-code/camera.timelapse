@@ -29,7 +29,7 @@ camera.timelapse <options>
 
 ### Options
 
-+ _--interval_ : Set the timelapse interval    *(default: 60)*
++ _--interval_ : Set the timelapse interval    *(default: 15)*
 + _--framerate_ : Set the output framerate     *(default: 60)*
 + _--renderVideo_ : Set whether a video is generated every 24 hours     *(default: True)*
 + _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)* 
