@@ -40,5 +40,5 @@ camera.timelapse <options>
 
 ## Automatic YouTube Upload
 
-To use the automatic YouTube upload feature, you will need to obtain an OAuth 2.0 client ID and client secret from the Google Developers Console.
+To use the automatic YouTube upload feature, you will need to obtain an OAuth 2.0 client ID and client secret from the [Google Developers Console](https://console.developers.google.com/apis/credentials).
 You will then need to enter those values into the config.json file.  These steps are _only_ required if you wish to use the automatic upload feature.
