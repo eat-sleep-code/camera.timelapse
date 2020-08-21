@@ -31,12 +31,12 @@ camera.timelapse <options>
 
 + _--interval_ : Set the timelapse interval    *(default: 15)*
 + _--framerate_ : Set the output framerate     *(default: 60)*
++ _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)*
 + _--renderVideo_ : Set whether a video is generated every 24 hours     *(default: True)*
 + _--uploadVideo_ : Set whether to automatically upload videos to YouTube    *(default: False)*
 + _--channel_ : Set the YouTube channel ID   *(default: primary channel)*
-+ _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)* 
 
---
+---
 
 ## Automatic YouTube Upload
 
