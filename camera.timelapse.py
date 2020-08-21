@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-version = "2020.08.20"
+version = "2020.08.21"
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -19,8 +19,10 @@ camera.resolution = (1920, 1080)
 parser = argparse.ArgumentParser()
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval')
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate')
-parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved')
+parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
+parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube')
+parser.add_argument('--channel', Set the YouTube channel ID (default: primary channel)
 args = parser.parse_args()
 
 
@@ -45,7 +47,15 @@ if renderVideo != False:
 	renderVideo = True
 renderingInProgress = False
 
-	
+
+uploadVideo = args.uploadVideo or False
+if renderVideo != True:
+	renderVideo = False
+
+
+channel = args.channel or 'DEFAULT'
+
+
 outputFolder = args.outputFolder or "dcim/"
 if outputFolder.endswith('/') == False:
 	outputFolder = outputFolder+"/"
@@ -111,6 +121,11 @@ def convertSequenceToVideo(dateToConvert):
 		outputFilePath = dateToConvertStamp + '.mp4'	
 		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx264 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		renderingInProgress = False
+		if uploadVideo: 
+			try:			
+				subprocess.call('camera.timelapse.upload --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description "Timelapse for ' + dateToConvert.strftime("%Y-%m-%d") + '"' --keywords "timelapse" --channel ' + channel , shell=True)
+			except Exception as ex:
+				print(' WARNING: YouTube upload may have failed! ' + str(ex)) 	
 	except ffmpeg.Error as ex:
 		print(' ERROR: Could not convert sequence to video.')
 
