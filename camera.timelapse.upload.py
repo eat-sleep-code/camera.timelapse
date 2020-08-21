@@ -78,7 +78,7 @@ def initalizeUpload(youtube, options):
 	targetChannel = youtube.channels.list(part="id", mine=true)[0]
 	if options.channel:
 		if options.channel != 'DEFAULT':
-			targetChannel = channel
+			targetChannel = options.channel
 	body=dict(snippet=dict(title=options.title, description=options.description, tags=tags, categoryId=options.category, channelId=targetChannel),status=dict(privacyStatus=options.privacyStatus))
 	uploadRequest = youtube.videos().insert(part=",".join(body.keys()),body=body,media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True))
 	resumableUpload(uploadRequest)
