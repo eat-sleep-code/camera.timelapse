@@ -1,5 +1,4 @@
 from picamera import PiCamera
-import ffmpeg
 import argparse
 import datetime
 import keyboard
@@ -9,11 +8,11 @@ import sys
 import threading
 import time
 
-version = "2020.08.18"
+version = "2020.08.20"
 
 camera = PiCamera()
-camera.resolution = camera.MAX_RESOLUTION
-
+#camera.resolution = camera.MAX_RESOLUTION
+camera.resolution = (1920, 1080)
 
 # === Argument Handling ========================================================
 
@@ -37,11 +36,14 @@ try:
 	framerate = int(framerate)
 except:
 	framerate = 60
+shutter = int((1/(int(framerate)*2)) * 1000000)
+camera.shutter_speed = shutter
 
 	
 renderVideo = args.renderVideo or True
 if renderVideo != False:
 	renderVideo = True
+renderingInProgress = False
 
 	
 outputFolder = args.outputFolder or "dcim/"
@@ -96,43 +98,44 @@ def captureTimelapse():
 def convertSequenceToVideo(dateToConvert):
 	try:
 		global framerate
-		global outputFolder
-		dateToConvertStamp = dateToConvert.strftime("%Y%m%d")
-		output_options = {
-			'crf': 20,
-			'preset': 'slower',
-			'movflags': 'faststart',
-			'pix_fmt': 'yuv420p'
-		}
-		ffmpeg.input(outputFolder + dateToConvertStamp +'-*.jpg', pattern_type='glob', framerate=framerate).filter_('deflicker', mode='pm', size=10).filter_('scale', size='hd1080', force_original_aspect_ratio='increase').output(dateToConvertStamp + '.mp4', **output_options).run()	
-	except:
-		print(' ERROR: Could not convert sequence to video. ')
+		global renderingInProgress
+		global outputFolder		
+		renderingInProgress = True
+		dateToConvertStamp = dateToConvert.strftime("%Y%m%d")		
+		outputFilePath = dateToConvertStamp + '.mp4'	
+		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx264 -crf 20 -preset slow '+ outputFilePath, shell=True)
+		renderingInProgress = False
+	except ffmpeg.Error as ex:
+		print(' ERROR: Could not convert sequence to video.')
+
 
 # === Timelapse Capture ========================================================
 
 try: 
+	os.chdir('/home/pi') 
+	#print(camera.shutter_speed)		
 	while True:
-
 		if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
 			# clear()
 			echoOn()
 			break
 
-		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(0, 0, 640, 360))
+		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(60, 60, 640, 360))
 		time.sleep(2)	
 
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
 
-		while renderVideo:
-			yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
-			yesterdayStamp = yesterday.strftime("%Y%m%d")
-			firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '-00000001.jpg')
-			videoExists = os.path.exists(outputFolder + yesterdayStamp + '.mp4')
-			#print(videoExists)
-			if firstFrameExists == True and videoExists == False:
-				convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
-				convertThread.start()
+		while renderVideo:			
+			if renderingInProgress == False:
+				time.sleep(interval)
+				yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
+				yesterdayStamp = yesterday.strftime("%Y%m%d")
+				firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '-00000001.jpg')
+				videoExists = os.path.exists(outputFolder + yesterdayStamp + '.mp4')
+				if firstFrameExists == True and videoExists == False:
+					convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
+					convertThread.start()
 			time.sleep(3600)
 
 
