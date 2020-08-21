@@ -88,8 +88,14 @@ def captureTimelapse():
 	try:
 		global interval
 		global outputFolder
-		for filename in camera.capture_continuous(getFilePath('{counter:08d}')):	
-			time.sleep(interval) #seconds
+		started = datetime.datetime.now().strftime("%Y%m%d")
+		while True:
+			for filename in camera.capture_continuous(getFilePath('{counter:08d}')):				
+				if started != datetime.datetime.now().strftime("%Y%m%d"):
+					started = datetime.datetime.now().strftime("%Y%m%d")
+					break
+				else:				
+					time.sleep(interval) #seconds
 	except: 
 		print(' ERROR: Could not capture image. ')
 
