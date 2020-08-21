@@ -20,10 +20,10 @@ validPrivacyStatus = ("public", "private", "unlisted")
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--file", required=True, help="Select the file to upload")
-parser.add_argument("--title", help="Set the video title")
-parser.add_argument("--description", help="Set the video description")
+parser.add_argument("--title", default="Timelapse" help="Set the video title")
+parser.add_argument("--description", default="Timelapse Video", help="Set the video description")
 parser.add_argument("--category", default="22", help="Set the video category.  [ https://developers.google.com/youtube/v3/docs/videoCategories/list ]")
-parser.add_argument("--keywords", help="Set the keywords (comma-seperated)")
+parser.add_argument("--keywords", default="timelapse", help="Set the keywords (comma-seperated)")
 parser.add_argument("--privacyStatus", choices=validPrivacyStatus, default=validPrivacyStatus[0], help="Video privacy status.")
 parser.add_argument("--channel", help="Set the channel ID")
 args = parser.parse_args()
@@ -77,7 +77,8 @@ def initalizeUpload(youtube, options):
 		tags = options.keywords.split(",")
 	targetChannel = youtube.channels.list(part="id", mine=true)[0]
 	if options.channel:
-		targetChannel = channel
+		if options.channel != 'DEFAULT':
+			targetChannel = channel
 	body=dict(snippet=dict(title=options.title, description=options.description, tags=tags, categoryId=options.category, channelId=targetChannel),status=dict(privacyStatus=options.privacyStatus))
 	uploadRequest = youtube.videos().insert(part=",".join(body.keys()),body=body,media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True))
 	resumableUpload(uploadRequest)
