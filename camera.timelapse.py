@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-version = "2020.08.21"
+version = "2020.08.22"
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -22,11 +22,11 @@ parser.add_argument('--framerate', dest='framerate', help='Set the output framer
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved')
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
 parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube')
-parser.add_argument('--channel', Set the YouTube channel ID (default: primary channel)
+parser.add_argument('--channel', help='Set the YouTube channel ID (default: primary channel)')
 args = parser.parse_args()
 
 
-interval = args.interval or 15
+interval = args.interval or 10
 try:
 	interval = int(interval)
 except:
@@ -119,11 +119,16 @@ def convertSequenceToVideo(dateToConvert):
 		renderingInProgress = True
 		dateToConvertStamp = dateToConvert.strftime("%Y%m%d")		
 		outputFilePath = dateToConvertStamp + '.mp4'	
-		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx264 -crf 20 -preset slow '+ outputFilePath, shell=True)
+		# The following runs out of memory as it is not hardware accelerated, perhaps in the future?
+		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
+		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
+		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
 		renderingInProgress = False
 		if uploadVideo: 
-			try:			
-				subprocess.call('camera.timelapse.upload --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description "Timelapse for ' + dateToConvert.strftime("%Y-%m-%d") + '"' --keywords "timelapse" --channel ' + channel , shell=True)
+			try:		
+				print('Uploading video...')	
+				uploadDescription = 'Timelapse for ' + dateToConvert.strftime("%Y-%m-%d")
+				subprocess.call('camera.timelapse.upload --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description ' + uploadDescription + ' --channel ' + channel , shell=True)
 			except Exception as ex:
 				print(' WARNING: YouTube upload may have failed! ' + str(ex)) 	
 	except ffmpeg.Error as ex:
@@ -157,6 +162,7 @@ try:
 				if firstFrameExists == True and videoExists == False:
 					convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
 					convertThread.start()
+					#convertSequenceToVideo(yesterday)
 			time.sleep(3600)
 
 
