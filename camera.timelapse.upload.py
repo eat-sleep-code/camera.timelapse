@@ -18,7 +18,7 @@ version = "2020.08.22"
 validPrivacyStatus = ("public", "private", "unlisted")
 
 # === Argument Handling ========================================================
-
+print(sys.argv)
 argparser.add_argument("--file", required=True, help="Select the file to upload")
 argparser.add_argument("--title", default="Timelapse", help="Set the video title")
 argparser.add_argument("--description", default="Timelapse Video", help="Set the video description")
