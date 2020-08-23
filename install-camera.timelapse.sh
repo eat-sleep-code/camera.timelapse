@@ -26,7 +26,7 @@ cd ~
 echo ''
 echo -e '\033[93mSetting up aliases... \033[0m'
 sudo sed -i '/\b\(function camera.timelapse\)\b/d' ~/.bash_aliases
-sudo sed -i '$ a function camera.timelapse { sudo python3 ~/camera.timelapse/camera.timelapse.py $@; }' ~/.bash_aliases
+sudo sed -i '$ a function camera.timelapse { sudo python3 ~/camera.timelapse/camera.timelapse.py "$@"; }' ~/.bash_aliases
 echo -e 'You may use \e[1mcamera.timelapse <options>\e[0m to launch the program.'
 echo ''
 echo 'To use the automatic YouTube upload feature, you will need to update the config.json.'
