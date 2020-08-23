@@ -32,13 +32,17 @@ camera.timelapse <options>
 + _--interval_ : Set the timelapse interval    *(default: 15)*
 + _--framerate_ : Set the output framerate     *(default: 60)*
 + _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)*
++ _--retention_ : Set the number of days to locally retain the captured files    *(default: 7)*
 + _--renderVideo_ : Set whether a video is generated every 24 hours     *(default: True)*
 + _--uploadVideo_ : Set whether to automatically upload videos to YouTube    *(default: False)*
-+ _--privacy_ : If uploading a video, set the privacy of the video   *(default: public)*
++ _--privacy_ : Set the privacy status of the YouTube video  *(default: public)*
 
 ---
 
 ## Automatic YouTube Upload
 
-To use the automatic YouTube upload feature, you will need to obtain an OAuth 2.0 client ID and client secret from the [Google Developers Console](https://console.developers.google.com/apis/credentials).
-You will then need to enter those values into the config.json file.  These steps are _only_ required if you wish to use the automatic upload feature.
+To use the automatic YouTube upload feature, you will need to: 
++ Obtain an OAuth 2.0 client ID and client secret from the [Google Developers Console](https://console.developers.google.com/apis/credentials)
++ Add the appropriate values into a config.json file (see example file)
+
+NOTE: These steps are _only_ required if you wish to use the automatic upload feature.
