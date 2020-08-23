@@ -22,7 +22,6 @@ parser.add_argument('--framerate', dest='framerate', help='Set the output framer
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved')
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
 parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube')
-parser.add_argument('--channel', help='Set the YouTube channel ID (default: primary channel)')
 args = parser.parse_args()
 
 
@@ -51,10 +50,6 @@ renderingInProgress = False
 uploadVideo = args.uploadVideo or False
 if renderVideo != True:
 	renderVideo = False
-
-
-channel = args.channel or 'DEFAULT'
-
 
 outputFolder = args.outputFolder or "dcim/"
 if outputFolder.endswith('/') == False:
@@ -128,7 +123,7 @@ def convertSequenceToVideo(dateToConvert):
 			try:		
 				print('Uploading video...')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime("%Y-%m-%d")
-				subprocess.call('camera.timelapse.upload --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description ' + uploadDescription + ' --channel ' + channel , shell=True)
+				subprocess.call('camera.timelapse.upload --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description ' + uploadDescription + ' --noauth_local_webserver ' , shell=True)
 			except Exception as ex:
 				print(' WARNING: YouTube upload may have failed! ' + str(ex)) 	
 	except ffmpeg.Error as ex:
