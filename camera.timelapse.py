@@ -22,7 +22,7 @@ parser.add_argument('--framerate', dest='framerate', help='Set the output framer
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved')
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
 parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube')
-parser.add_argument('--privacy', dest='privacy', help='If uploading a video, set the status of the video')
+parser.add_argument('--privacy', dest='privacy', help='If uploading a video, set the privacy of the video')
 args = parser.parse_args()
 
 
