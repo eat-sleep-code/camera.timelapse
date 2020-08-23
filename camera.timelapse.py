@@ -125,7 +125,7 @@ def convertSequenceToVideo(dateToConvert):
 			try:		
 				print('Uploading video...')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime("%Y-%m-%d")
-				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFilePath + ' --title ' + dateToConvertStamp + ' --description ' + uploadDescription + ' --privacyStatus ' + privacy + ' --noauth_local_webserver ' , shell=True)
+				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title "' + dateToConvertStamp + '" --description "' + uploadDescription + '" --privacyStatus ' + privacy + ' --noauth_local_webserver ' , shell=True)
 			except Exception as ex:
 				print(' WARNING: YouTube upload may have failed! ' + str(ex)) 	
 	except ffmpeg.Error as ex:
