@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-version = "2020.08.22"
+version = "2020.08.23"
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -20,9 +20,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval')
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate')
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved')
+parser.add_argument('--retention', dest='retention', help='Set the number of days to locally retain the captured files')
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours')
 parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube')
-parser.add_argument('--privacy', dest='privacy', help='If uploading a video, set the privacy of the video')
+parser.add_argument('--privacy', dest='privacy', help='Set the privacy status of the YouTube video')
+
 args = parser.parse_args()
 
 
@@ -41,7 +43,14 @@ except:
 shutter = int((1/(int(framerate)*2)) * 1000000)
 camera.shutter_speed = shutter
 
-	
+
+retention = args.retention or 7
+try: 
+	retention = int(retention)
+except:
+	retention = 7
+
+
 renderVideo = args.renderVideo or True
 if renderVideo != False:
 	renderVideo = True
@@ -83,7 +92,7 @@ def getFilePath(imageCounter = 1):
 	try:
 		os.makedirs(outputFolder, exist_ok = True)
 	except OSError:
-		print (" ERROR: Creation of the output folder %s failed." % path)
+		print ('\n ERROR: Creation of the output folder ' + outputFolder + ' failed!' )
 		echoOn()
 		quit()
 	else:
@@ -95,8 +104,9 @@ def captureTimelapse():
 	try:
 		global interval
 		global outputFolder
-		started = datetime.datetime.now().strftime("%Y%m%d")
+		started = datetime.datetime.now().strftime("%Y%m%d")		
 		while True:
+			print('\n INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')
 			for filename in camera.capture_continuous(getFilePath('{counter:08d}')):				
 				if started != datetime.datetime.now().strftime("%Y%m%d"):
 					started = datetime.datetime.now().strftime("%Y%m%d")
@@ -104,7 +114,7 @@ def captureTimelapse():
 				else:				
 					time.sleep(interval) #seconds
 	except: 
-		print(' ERROR: Could not capture image. ')
+		print(' WARNING: Could not capture most recent image. ')
 
 # ------------------------------------------------------------------------------
 
@@ -123,19 +133,41 @@ def convertSequenceToVideo(dateToConvert):
 		renderingInProgress = False
 		if uploadVideo: 
 			try:		
-				print('Uploading video...')	
+				print('\n INFO: Uploading video...')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime("%Y-%m-%d")
 				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title "' + dateToConvertStamp + '" --description "' + uploadDescription + '" --privacyStatus ' + privacy + ' --noauth_local_webserver ' , shell=True)
 			except Exception as ex:
-				print(' WARNING: YouTube upload may have failed! ' + str(ex)) 	
+				print(' WARNING: YouTube upload may have failed! ' + str(ex) ) 	
 	except ffmpeg.Error as ex:
-		print(' ERROR: Could not convert sequence to video.')
+		print(' ERROR: Could not convert sequence to video. ')
+
+# ------------------------------------------------------------------------------
+
+def cleanup():
+	try:
+		global outputFolder
+		global retention
+		now = time.time()
+		print('\n INFO: Starting removal of files older than ' + str(retention) + ' days... ')
+		for file in os.listdir(outputFolder):
+			filePath = os.path.join(outputFolder, file)
+			fileModified = os.stat(filePath).st_mtime
+			fileCompare = now - (retention * 86400)
+			if fileModified < fileCompare:
+				os.remove(filePath)
+		print(' INFO: Cleanup complete')
+	except Exception as ex:
+		print('\n ERROR: ' + str(ex) )
 
 
 # === Timelapse Capture ========================================================
 
 try: 
 	os.chdir('/home/pi') 
+
+	print('\n Camera (Timelapse) ' + version )
+	print('\n ----------------------------------------------------------------------\n')
+		
 	#print(camera.shutter_speed)		
 	while True:
 		if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
@@ -148,6 +180,13 @@ try:
 
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
+
+		if retention > 0:
+			cleanupThread = threading.Thread(target=cleanup)
+			cleanupThread.start()
+		else:
+			print('\n WARNING: Retaining captured files indefinitely ')
+			print('          Please ensure that sufficient storage exists or set a retention value ')
 
 		while renderVideo:			
 			if renderingInProgress == False:
