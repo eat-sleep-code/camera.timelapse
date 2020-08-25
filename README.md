@@ -29,7 +29,7 @@ camera.timelapse <options>
 
 ### Options
 
-+ _--interval_ : Set the timelapse interval    *(default: 15)*
++ _--interval_ : Set the timelapse interval    *(default: 10)*
 + _--framerate_ : Set the output framerate     *(default: 60)*
 + _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)*
 + _--retention_ : Set the number of days to locally retain the captured files    *(default: 7)*
