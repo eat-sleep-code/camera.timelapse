@@ -40,8 +40,9 @@ try:
 	framerate = int(framerate)
 except:
 	framerate = 60
-shutter = int((1/(int(framerate)*2)) * 1000000)
-camera.shutter_speed = shutter
+shutter = int((1/(int(framerate)*2)) * 10000000)
+
+
 
 
 retention = args.retention or 7
@@ -106,8 +107,9 @@ def captureTimelapse():
 		global outputFolder
 		started = datetime.datetime.now().strftime("%Y%m%d")		
 		while True:
-			print('\n INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')
-			for filename in camera.capture_continuous(getFilePath('{counter:08d}')):				
+			print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')
+			for filename in camera.capture_continuous(getFilePath('{counter:08d}')):	
+				
 				if started != datetime.datetime.now().strftime("%Y%m%d"):
 					started = datetime.datetime.now().strftime("%Y%m%d")
 					break
@@ -174,10 +176,13 @@ try:
 			# clear()
 			echoOn()
 			break
-
-		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(60, 60, 640, 360))
-		time.sleep(2)	
-
+		
+		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(60, 60, 640, 360))		
+		time.sleep(3)	
+		camera.shutter_speed = shutter
+		#print(' Shutter Speed: ' + str(camera.exposure_speed)) 
+		#camera.iso = 400
+		#print(' ISO: ' + str(camera.ISO))
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
 
