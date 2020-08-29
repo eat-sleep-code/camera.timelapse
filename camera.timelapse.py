@@ -8,11 +8,13 @@ import sys
 import threading
 import time
 
-version = "2020.08.23"
+version = "2020.08.28"
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
 camera.resolution = (1920, 1080)
+camera.sensor_mode = 3
+camera.framerate = 1
 
 # === Argument Handling ========================================================
 
@@ -32,7 +34,7 @@ interval = args.interval or 10
 try:
 	interval = int(interval)
 except:
-	interval = 60
+	interval = 10
 
 
 framerate = args.framerate or 60
