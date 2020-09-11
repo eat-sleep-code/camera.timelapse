@@ -10,7 +10,7 @@ sudo apt update
 echo ''
 echo -e '\033[93mInstalling prerequisites... \033[0m'
 sudo apt install -y git python3 python3-pip python3-picamera ffmpeg
-sudo pip3 install keyboard google-api-python-client oauth2client 
+sudo pip3 install keyboard google-api-python-client oauth2client numpy Pillow
 
 echo ''
 echo -e '\033[93mInstalling Camera... \033[0m'
