@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-version = '2020.09.11'
+version = '2020.09.12'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -114,23 +114,29 @@ def captureTimelapse():
 	try:
 		global interval
 		global outputFolder
-		started = datetime.datetime.now().strftime('%Y%m%d')		
-		while True:
-			print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')
-			for filename in camera.capture_continuous(getFilePath('{counter:08d}')):	
+		started = datetime.datetime.now().strftime('%Y%m%d')
 
-				if started != datetime.datetime.now().strftime('%Y%m%d'):
-					started = datetime.datetime.now().strftime('%Y%m%d')
-					break
-				else:				
-					time.sleep(interval) #seconds
-	except: 
-		print(' WARNING: Could not capture most recent image. ')
+		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
+		latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
+		try:
+			counter = int(latestImagePath.replace(outputFolder + started + '-', '').replace('.jpg', '')) + 1
+		except:
+			counter = 1
+			pass
+	
+		print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')		
+		while True:
+			camera.capture(getFilePath(counter))
+			counter += 1					
+			time.sleep(interval)
+	except Exception as ex: 
+		print(' WARNING: Could not capture most recent image. ' + str(ex))
+		
 
 
 # ------------------------------------------------------------------------------
 
-def analyzeLastImage():
+def analyzeLastImages():
 	global interval
 	global framerate 
 
@@ -145,20 +151,27 @@ def analyzeLastImage():
 				measuredBrightness = numpy.mean(latestImage)
 				measuredBrightnessList.append(float(measuredBrightness))
 
-				if len(measuredBrightnessList) >= framerate:
+				if len(measuredBrightnessList) >= (framerate * 0.25):
 					measuredAverageBrightness = statistics.mean(measuredBrightnessList)
-					print(' INFO: Average brightness of ' + str(framerate) + ' recent images: ' + str(measuredAverageBrightness))
+					print(' INFO: Average brightness of ' + str((framerate * 0.25)) + ' recent images: ' + str(measuredAverageBrightness))
 					if measuredAverageBrightness < (brightnessThreshold - 10) and measuredAverageBrightness > -1:
 						if camera.framerate >= 30:
-							camera.framerate(fractions.Fraction(1, 10))
-							print(' INFO: Entering long exposure mode based on analysis of last image. ')
+							print(' INFO: Entering long exposure mode based on analysis of last image set... ')
+							slowFramerate = fractions.Fraction(1, 10)							
+							try:							
+								camera.framerate = slowFramerate
+							except Exception as ex:
+								print('Error setting framerate to ' + str(slowFramerate) + ' ' + str(ex))
+								pass						
 					elif measuredAverageBrightness > (brightnessThreshold + 10):
 						if camera.framerate < 30:
+							print(' INFO: Exiting long exposure mode based on analysis of last image set...  ')
 							camera.framerate = 30
-							print(' INFO: Exiting long exposure mode based on analysis of last image.  ')
+					
 					measuredBrightnessList.clear()
 
-			except: 
+			except:
+				# Ignore errors as sometimes a file will still be in use and can't be analyzed
 				pass
 			time.sleep(interval)
 	except Exception:
@@ -174,6 +187,7 @@ def convertSequenceToVideo(dateToConvert):
 		renderingInProgress = True
 		dateToConvertStamp = dateToConvert.strftime('%Y%m%d')		
 		outputFilePath = dateToConvertStamp + '.mp4'	
+		print('\n INFO: Converting existing image sequence to video... ')
 		# The following runs out of memory as it is not hardware accelerated, perhaps in the future?
 		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
@@ -181,7 +195,7 @@ def convertSequenceToVideo(dateToConvert):
 		renderingInProgress = False
 		if uploadVideo: 
 			try:		
-				print('\n INFO: Uploading video...')	
+				print('\n INFO: Uploading video... ')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime('%Y-%m-%d')
 				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title '' + dateToConvertStamp + '' --description '' + uploadDescription + '' --privacyStatus ' + privacy + ' --noauth_local_webserver ' , shell=True)
 			except Exception as ex:
@@ -234,7 +248,7 @@ try:
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
 
-		analysisThread = threading.Thread(target=analyzeLastImage)
+		analysisThread = threading.Thread(target=analyzeLastImages)
 		analysisThread.start()
 
 		if retention > 0:
