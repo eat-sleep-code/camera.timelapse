@@ -116,14 +116,19 @@ def captureTimelapse():
 		global outputFolder
 		started = datetime.datetime.now().strftime('%Y%m%d')
 
-		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
-		latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
-		try:
-			counter = int(latestImagePath.replace(outputFolder + started + '-', '').replace('.jpg', '')) + 1
-		except:
+		if started != datetime.datetime.now().strftime('%Y%m%d'):
+			# It is a new day, reset the counter
+			started = datetime.datetime.now().strftime('%Y%m%d')
 			counter = 1
-			pass
-	
+		else:		
+			# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
+			latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
+			try:
+				counter = int(latestImagePath.replace(outputFolder + started + '-', '').replace('.jpg', '')) + 1
+			except:
+				counter = 1
+				pass
+		
 		print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')		
 		while True:
 			camera.capture(getFilePath(counter))
