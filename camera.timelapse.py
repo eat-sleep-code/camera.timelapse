@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-version = '2020.09.12'
+version = '2020.09.13'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
