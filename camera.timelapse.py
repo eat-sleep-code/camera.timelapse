@@ -117,8 +117,8 @@ def captureTimelapse():
 		started = datetime.datetime.now().strftime('%Y%m%d')
 
 		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
-		latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
 		try:
+			latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
 			counter = int(latestImagePath.replace(outputFolder + started + '-', '').replace('.jpg', '')) + 1
 		except:
 			counter = 1
@@ -150,8 +150,8 @@ def analyzeLastImages():
 		measuredBrightnessList = []
 			
 		while True:	
-			latestImagePath = max(glob.iglob(outputFolder + '*.jpg'),key=os.path.getmtime)
-			try:			
+			try:
+				latestImagePath = max(glob.iglob(outputFolder + '*.jpg'),key=os.path.getmtime)
 				latestImage = Image.open(latestImagePath)
 				measuredBrightness = numpy.mean(latestImage)
 				measuredBrightnessList.append(float(measuredBrightness))
