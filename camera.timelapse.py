@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-version = '2020.09.15'
+version = '2020.09.16'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -25,6 +25,7 @@ camera.framerate = 1
 # === Argument Handling ========================================================
 
 parser = argparse.ArgumentParser()
+parser.add_argument('--delayStart', dest='delayStart', help='Set the number of seconds before the timelapse sequence starts', type=int)
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval', type=int)
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate', type=int)
 parser.add_argument('--rotate', dest='rotate', help='Rotate the camera in 90* increments', type=int)
@@ -35,6 +36,13 @@ parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to au
 parser.add_argument('--privacy', dest='privacy', help='Set the privacy status of the YouTube video', type=str)
 
 args = parser.parse_args()
+
+delayStart = args.delayStart or 0
+try:
+	delayStart = int(delayStart)
+except:
+	delayStart = 0
+
 
 interval = args.interval or 10
 try:
@@ -267,7 +275,12 @@ try:
 
 	print('\n Camera (Timelapse) ' + version )
 	print('\n ----------------------------------------------------------------------\n')
-		
+	
+	if delayStart > 0:
+		print('\n Startup delayed by ' + str(delayStart) + ' seconds... ')	
+		time.sleep(delayStart)
+
+	
 	#print(camera.shutter_speed)		
 	while True:
 		try:
