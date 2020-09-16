@@ -50,7 +50,7 @@ NOTE: These steps are _only_ required if you wish to use the automatic upload fe
 
 ---
 
-### Autorun
+## Autorun
 Want to start the timelapse sequence every time you boot your Raspberry Pi?  Here is how!
 
 * Run `sudo nano /etc/systemd/system/camera.timelapse.service`[\*\*](https://www.nano-editor.org/dist/v2.8/nano.html) and enter the following lines (be sure to specify any arguments!): 
