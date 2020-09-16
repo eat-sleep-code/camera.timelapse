@@ -270,11 +270,15 @@ try:
 		
 	#print(camera.shutter_speed)		
 	while True:
-		if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
-			# clear()
-			echoOn()
-			break
-		
+		try:
+			if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
+				# clear()
+				echoOn()
+				break
+		except:
+			# Keyboard commands will throw an exception in SSH sessions, so ignore
+			pass
+			
 		if rotate > 0:
 			camera.rotation = rotate
 
