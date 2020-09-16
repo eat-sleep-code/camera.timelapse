@@ -1,0 +1,13 @@
+[Unit]
+Description=Timelapse service
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/camera.timelapse/camera.timelapse.py
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=Camera Timelapse
+User=pi
+
+[Install]
+WantedBy=multi-user.target
