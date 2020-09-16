@@ -25,23 +25,19 @@ camera.framerate = 1
 # === Argument Handling ========================================================
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--delayStart', dest='delayStart', help='Set the number of seconds before the timelapse sequence starts', type=int)
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval', type=int)
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate', type=int)
 parser.add_argument('--rotate', dest='rotate', help='Rotate the camera in 90* increments', type=int)
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved', type=str)
 parser.add_argument('--retention', dest='retention', help='Set the number of days to locally retain the captured files', type=int)
+parser.add_argument('--waitUntilAnalysis', dest='waitUntilAnalysis', help='Set whether to perform an initial analysis', type=bool)
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours', type=bool)
 parser.add_argument('--uploadVideo', dest='uploadVideo', help='Set whether to automatically upload videos to YouTube', type=bool)
 parser.add_argument('--privacy', dest='privacy', help='Set the privacy status of the YouTube video', type=str)
 
-args = parser.parse_args()
 
-delayStart = args.delayStart or 0
-try:
-	delayStart = int(delayStart)
-except:
-	delayStart = 0
+
+args = parser.parse_args()
 
 
 interval = args.interval or 10
@@ -49,6 +45,7 @@ try:
 	interval = int(interval)
 except:
 	interval = 10
+
 
 framerate = args.framerate or 60
 try:
@@ -73,6 +70,13 @@ except:
 	retention = 7
 
 
+waitUntilAnalysis = args.waitUntilAnalysis or False
+if waitUntilAnalysis != True:
+	waitUntilAnalysis = False
+	waitUntilAnalysisStatus = -1
+else:
+	waitUntilAnalysisStatus = 1
+
 renderVideo = args.renderVideo or True
 if renderVideo != False:
 	renderVideo = True
@@ -83,11 +87,17 @@ uploadVideo = args.uploadVideo or False
 if uploadVideo != True:
 	uploadVideo = False
 
+
 outputFolder = args.outputFolder or 'dcim/'
 if outputFolder.endswith('/') == False:
 	outputFolder = outputFolder+'/'
 
+
 privacy = args.privacy or 'public'
+
+
+
+
 
 brightnessThreshold = 125
 darknessThreshold = 35
@@ -107,9 +117,13 @@ clear()
 # === Functions ================================================================
 
 def getFileName(imageCounter = 1):
+	global waitUntilAnalysisStatus
+
 	now = datetime.datetime.now()
 	datestamp = now.strftime('%Y%m%d')
 	extension = '.jpg'
+	if waitUntilAnalysisStatus != -1:
+		extension = '~.jpg' 	
 	return datestamp + '-' + str(imageCounter).zfill(8) + extension
 
 
@@ -131,6 +145,8 @@ def captureTimelapse():
 	try:
 		global interval
 		global outputFolder
+		global waitUntilAnalysisStatus
+
 		started = datetime.datetime.now().strftime('%Y%m%d')
 
 		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
@@ -140,14 +156,20 @@ def captureTimelapse():
 		except:
 			counter = 1
 			pass
+
+		preAnalysisCounter = counter
 		
 		print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')		
 		while True:
+			if waitUntilAnalysisStatus == 0:
+				waitUntilAnalysisStatus = -1
+				counter = preAnalysisCounter 
+				
 			if started != datetime.datetime.now().strftime('%Y%m%d'):
 				# It is a new day, reset the counter
 				started = datetime.datetime.now().strftime('%Y%m%d')
 				counter = 1
-
+			
 			camera.capture(getFilePath(counter))
 			counter += 1					
 			time.sleep(interval)
@@ -160,8 +182,9 @@ def captureTimelapse():
 
 def analyzeLastImages():
 	global interval
-	global framerate 
-	
+	global framerate
+	global waitUntilAnalysisStatus
+ 	
 	try:
 		time.sleep(interval * 1.5) 
 		print('\n INFO: Starting image analysis... ')
@@ -176,7 +199,11 @@ def analyzeLastImages():
 				if len(measuredBrightnessList) >= (framerate * 0.25):
 					measuredAverageBrightness = statistics.mean(measuredBrightnessList)
 					print(' INFO: Average brightness of ' + str(int(framerate * 0.25)) + ' recent images: ' + str(measuredAverageBrightness))
-					
+					if waitUntilAnalysisStatus == 1:
+						print(' INFO: Removing files created during initial analysis... ')
+						waitUntilAnalysisStatus = 0
+						for analysisFile in glob.iglob(outputFolder + '*~.jpg'):
+							os.remove(analysisFile)
 					if measuredAverageBrightness < (darknessThreshold - 10) and measuredAverageBrightness > -1:
 						if camera.framerate >= 30:
 							print(' INFO: Entering long exposure mode based on analysis of last image set... ')
@@ -275,11 +302,6 @@ try:
 
 	print('\n Camera (Timelapse) ' + version )
 	print('\n ----------------------------------------------------------------------\n')
-	
-	if delayStart > 0:
-		print('\n Startup delayed by ' + str(delayStart) + ' seconds... ')	
-		time.sleep(delayStart)
-
 	
 	#print(camera.shutter_speed)		
 	while True:
