@@ -47,3 +47,28 @@ To use the automatic YouTube upload feature, you will need to:
 + Add the appropriate values into a config.json file (see example file)
 
 NOTE: These steps are _only_ required if you wish to use the automatic upload feature.
+
+---
+
+### Autorun
+Want to start the timelapse sequence every time you boot your Raspberry Pi?  Here is how!
+
+* Run `sudo nano /etc/systemd/system/camera.timelapse.service`[\*\*](https://www.nano-editor.org/dist/v2.8/nano.html) and enter the following lines (be sure to specify any arguments!): 
+````
+[Unit]
+Description=Timelapse service
+
+[Service]
+ExecStart=/usr/bin/python3 /home/pi/camera.timelapse/camera.timelapse.py --rotate 270 --uploadVideo True
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=Camera Timelapse
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+````
+* Run `sudo systemctl enable camera.timelapse.service`
+* Run `sudo systemctl start camera.timelapse.service`
+* Run `sudo reboot`
