@@ -28,6 +28,7 @@ echo -e '\033[93mCreating Service... \033[0m'
 sudo mv camera.timelapse.service /etc/systemd/system/camera.timelapse.service
 sudo chown root:root /etc/systemd/system/camera.timelapse.service
 sudo chmod +x *.sh 
+echo 'Please see the README file for more information on configuring the service.'
 
 cd ~
 echo ''
