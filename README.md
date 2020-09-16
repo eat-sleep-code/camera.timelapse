@@ -55,5 +55,4 @@ Want to start the timelapse sequence every time you boot your Raspberry Pi?  Her
 
 * Review `/etc/systemd/system/camera.timelapse.service`
    * If you would like to add any of aforementioned options you may do so by editing the service file.
-* Run `~/camera.timelapse/install-camera.timelapse.service.sh
-`
+* Run `~/camera.timelapse/install-camera.timelapse.service.sh`
