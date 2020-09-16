@@ -13,7 +13,7 @@ import sys
 import threading
 import time
 
-version = '2020.09.14'
+version = '2020.09.15'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -27,6 +27,7 @@ camera.framerate = 1
 parser = argparse.ArgumentParser()
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval', type=int)
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate', type=int)
+parser.add_argument('--rotate', dest='rotate', help='Rotate the camera in 90* increments', type=int)
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved', type=str)
 parser.add_argument('--retention', dest='retention', help='Set the number of days to locally retain the captured files', type=int)
 parser.add_argument('--renderVideo', dest='renderVideo', help='Set whether a video is generated every 24 hours', type=bool)
@@ -49,6 +50,12 @@ except:
 shutter = int((1/(int(framerate)*2)) * 10000000)
 defaultFramerate = 30
 
+
+rotate = args.rotate or 0
+try:
+	rotate = int(rotate)
+except:
+	rotate = 0
 
 
 retention = args.retention or 7
@@ -268,6 +275,9 @@ try:
 			echoOn()
 			break
 		
+		if rotate > 0:
+			camera.rotation = rotate
+
 		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(60, 60, 640, 360))				
 		time.sleep(3)	
 		camera.framerate = defaultFramerate
