@@ -1,7 +1,7 @@
 # This script will install the camera and any required prerequisites.
 cd ~
 echo -e ''
-echo -e '\033[32mCamera.Timelapse [Installation Script] \033[0m'
+echo -e '\033[32mCamera [Installation Script] \033[0m'
 echo -e '\033[32m-------------------------------------------------------------------------- \033[0m'
 echo -e ''
 echo -e '\033[93mUpdating package repositories... \033[0m'
@@ -10,7 +10,8 @@ sudo apt update
 echo ''
 echo -e '\033[93mInstalling prerequisites... \033[0m'
 sudo apt install -y git python3 python3-pip python3-picamera ffmpeg
-sudo pip3 install keyboard google-api-python-client oauth2client numpy Pillow
+sudo pip3 install ffmpeg-python google-api-python-client oauth2client 
+
 
 echo ''
 echo -e '\033[93mInstalling Camera... \033[0m'
@@ -21,6 +22,11 @@ sudo chown -R $USER:$USER camera.timelapse
 cd camera.timelapse
 sudo chmod +x camera.timelapse.py
 sudo chmod +x camera.timelapse.upload.py
+
+echo ''
+echo -e '\033[93mCreating Service... \033[0m'
+sudo mv camera.timelapse.service /etc/systemd/system/camera.timelapse.service
+sudo chown root:root /etc/systemd/system/camera.timelapse.service
 
 cd ~
 echo ''
