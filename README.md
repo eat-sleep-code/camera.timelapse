@@ -56,3 +56,30 @@ Want to start the timelapse sequence every time you boot your Raspberry Pi?  Her
 * Review `/etc/systemd/system/camera.timelapse.service`
    * If you would like to add any of aforementioned options you may do so by editing the service file.
 * Run `~/camera.timelapse/install-camera.timelapse.service.sh`
+
+### Log File Management
+To avoid your SD card filling up with log files when running your the timelapse as a service, consider moving your logs into a temporary in-memory file system.  
+
+This can by achieved by executing `sudo nano /etc/fstab` and add the following two lines.    
+
+__:warning: WARNING:__ Use caution when editing this file.   A typographical error can leave your Raspberry Pi in an unbootable state.
+
+```
+tmpfs /tmp tmpfs defaults,noatime,nosuid 0 0
+tmpfs /var/log tmpfs defaults,noatime,nosuid,size=16m 0 0
+```
+*:information_source: The above change results in log files being cleared every time your Raspberry Pi reboots.   Remove the above modifications if you need to analyze logs across multiple reboots.*
+
+---
+
+## Infrared Cameras
+If you are using an infrared (IR) camera, you will need to modify the Auto White Balance (AWB) mode at boot time.
+
+This can be achieved by executing `sudo nano /boot/config.txt` and adding the following line.
+
+```
+# Camera Settings 
+awb_auto_is_greyworld=1
+```
+
+Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more [IR emitting LEDs](https://www.adafruit.com/product/387) to take advantage of an Infrared Camera.
