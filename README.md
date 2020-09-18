@@ -75,7 +75,7 @@ tmpfs /var/log tmpfs defaults,noatime,nosuid,size=16m 0 0
 ## Infrared Cameras
 If you are using an infrared (IR) camera, you will need to modify the Auto White Balance (AWB) mode at boot time.
 
-This can be achieved by executing `sudo nano /boot/config.txt` and adding the following line.
+This can be achieved by executing `sudo nano /boot/config.txt` and adding the following lines.
 
 ```
 # Camera Settings 
