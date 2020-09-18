@@ -68,7 +68,7 @@ __:warning: WARNING:__ Use caution when editing this file.   A typographical err
 tmpfs /tmp tmpfs defaults,noatime,nosuid 0 0
 tmpfs /var/log tmpfs defaults,noatime,nosuid,size=16m 0 0
 ```
-*:information_source: The above change results in log files being cleared every time your Raspberry Pi reboots.   Remove the above modifications if you need to analyze logs across multiple reboots.*
+:information_source: *The above change results in log files being cleared every time your Raspberry Pi reboots.   Remove the above modifications if you need to analyze logs across multiple reboots.*
 
 ---
 
@@ -83,3 +83,6 @@ awb_auto_is_greyworld=1
 ```
 
 Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more [IR emitting LEDs](https://www.adafruit.com/product/387) to take advantage of an Infrared Camera.
+
+---
+:information_source: *This application was developed using a Raspberry Pi HQ (2020) camera and Raspberry Pi 3B+ and Raspberry Pi 4B boards. It has also been tested using v2.1 Raspberry Pi 8MP cameras and Pi Zero W boards.   Issues may arise if you are using either third party or older hardware.*
