@@ -13,7 +13,7 @@ import sys
 import subprocess
 import time
 
-version = '2020.09.14'
+version = '2020.09.18'
 
 validPrivacyStatus = ('public', 'private', 'unlisted')
 
@@ -28,7 +28,7 @@ argparser.add_argument('--privacyStatus', choices=validPrivacyStatus, default=va
 args = argparser.parse_args()
 
 if not os.path.exists(args.file):
-	exit('Please specify a valid file using the --file= parameter.')
+	exit('\n ERROR: Please specify a valid file using the --file= parameter.')
 
 # ------------------------------------------------------------------------------
 
@@ -57,6 +57,7 @@ def echoOn():
 # === Functions ================================================================
 
 def getAuthenticatedService(args):
+	print('\n YOUTUBE: Authenticating... ')
 	flow = flow_from_clientsecrets(configFile, scope=uploadScope, message='Please edit your config.json file.')
 	storage = Storage('%s-oauth2.json' % sys.argv[0])
 	credentials = storage.get()
@@ -69,6 +70,7 @@ def getAuthenticatedService(args):
 # ------------------------------------------------------------------------------
 
 def initalizeUpload(youtube, options):
+	print(' YOUTUBE: Initializing Upload... ')
 	tags = None
 	if options.keywords:
 		tags = options.keywords.split(',')
@@ -79,6 +81,7 @@ def initalizeUpload(youtube, options):
 # ------------------------------------------------------------------------------
 
 def resumableUpload(uploadRequest):
+	print(' YOUTUBE: Uploading... ')
 	response = None
 	error = None
 	retryAttempt = 0
@@ -87,28 +90,28 @@ def resumableUpload(uploadRequest):
 			status, response = uploadRequest.next_chunk()
 			if response is not None:
 				if 'id' in response:
-					print('Video id ' + str(response['id']) + ' was successfully uploaded.')
+					print(' YOUTUBE: Video id ' + str(response['id']) + ' was successfully uploaded.')
 					echoOn()
 					sys.exit(0)
 				else:
- 					exit('ERROR: The upload failed with an unexpected response of ' + str(response))
+ 					exit(' ERROR: The upload failed with an unexpected response of ' + str(response))
 		except HttpError as ex:
 			if ex.resp.status in retryStatusCodes:
-				error = 'INFO: A retriable HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content)
+				error = ' YOUTUBE: A retriable HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content)
 			else:
 				raise
 		except retryExceptions as ex:
-			error = 'A retriable error occurred: ' + str(ex)
+			error = ' YOUTUBE: A retriable error occurred: ' + str(ex)
 
 		if error is not None:
 			print(error)
 			retryAttempt += 1
 			if retryAttempt > maxRetries:
-				exit('Maximum retries exceeded.')
+				exit(' ERROR: Maximum retries exceeded.')
 
 			maxSleep = 2 ** retry
 			sleepTime = random.random() * maxSleep
-			print('Sleeping ' + sleepTime + ' and then retrying...')
+			print(' YOUTUBE: Sleeping ' + sleepTime + ' and then retrying...')
 			time.sleep(sleepTime)
 
 
@@ -121,7 +124,7 @@ try:
 		try:
 			initalizeUpload(youtube, args)
 		except HttpError as ex:
-			print('ERROR: An HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content))
+			print(' ERROR: An HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content))
 
 except KeyboardInterrupt:
 	echoOn()
