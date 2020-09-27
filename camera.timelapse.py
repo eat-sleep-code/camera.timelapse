@@ -131,8 +131,16 @@ def getFileName(imageCounter = 1):
 # ------------------------------------------------------------------------------
 
 def getFilePath(imageCounter = 1):
+	now = datetime.datetime.now()
+	datestamp = now.strftime('%Y%m%d')
 	try:
 		os.makedirs(outputFolder, exist_ok = True)
+		try:
+			os.makedirs(outputFolder + datestamp, exist_ok = True)
+		except OSError:
+			print ('\n ERROR: Creation of the output folder ' + outputFolder + datestamp + ' failed!' )
+			echoOn()
+			quit()
 	except OSError:
 		print ('\n ERROR: Creation of the output folder ' + outputFolder + ' failed!' )
 		echoOn()
