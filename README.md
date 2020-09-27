@@ -82,7 +82,7 @@ This can be achieved by executing `sudo nano /boot/config.txt` and adding the fo
 awb_auto_is_greyworld=1
 ```
 
-Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more [IR emitting LEDs](https://www.adafruit.com/product/387) to take advantage of an Infrared Camera.
+Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more to take advantage of an Infrared Camera.
 
 ---
 :information_source: *This application was developed using a Raspberry Pi HQ (2020) camera and Raspberry Pi 3B+ and Raspberry Pi 4B boards. It has also been tested using v2.1 Raspberry Pi 8MP cameras and Pi Zero W boards.   Issues may arise if you are using either third party or older hardware.*

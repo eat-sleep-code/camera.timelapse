@@ -7,13 +7,14 @@ import fractions
 import keyboard
 import numpy
 import os
+import shutil
 import statistics
 import subprocess
 import sys
 import threading
 import time
 
-version = '2020.09.16'
+version = '2020.09.27'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -124,7 +125,7 @@ def getFileName(imageCounter = 1):
 	extension = '.jpg'
 	if waitUntilAnalysisStatus != -1:
 		extension = '~.jpg' 	
-	return datestamp + '-' + str(imageCounter).zfill(8) + extension
+	return datestamp + '/' + str(imageCounter).zfill(8) + extension
 
 
 # ------------------------------------------------------------------------------
@@ -151,8 +152,8 @@ def captureTimelapse():
 
 		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
 		try:
-			latestImagePath = max(glob.iglob(outputFolder + started + '-*.jpg'),key=os.path.getmtime)
-			counter = int(latestImagePath.replace(outputFolder + started + '-', '').replace('.jpg', '')) + 1
+			latestImagePath = max(glob.iglob(outputFolder + started + '/*.jpg'),key=os.path.getmtime)
+			counter = int(latestImagePath.replace(outputFolder + started + '/', '').replace('.jpg', '')) + 1
 		except:
 			counter = 1
 			pass
@@ -192,7 +193,9 @@ def analyzeLastImages():
 		
 		while True:	
 			try:
-				latestImagePath = max(glob.iglob(outputFolder + '*.jpg'),key=os.path.getmtime)
+				started = datetime.datetime.now().strftime('%Y%m%d')
+
+				latestImagePath = max(glob.iglob(outputFolder + started + '/*.jpg'),key=os.path.getmtime)
 				latestImage = Image.open(latestImagePath)
 				measuredBrightness = numpy.mean(latestImage)
 				measuredBrightnessList.append(float(measuredBrightness))
@@ -256,9 +259,9 @@ def convertSequenceToVideo(dateToConvert):
 		outputFilePath = dateToConvertStamp + '.mp4'	
 		print('\n INFO: Converting existing image sequence to video... ')
 		# The following runs out of memory as it is not hardware accelerated, perhaps in the future?
-		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
+		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
-		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'-%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
+		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
 		renderingInProgress = False
 		print( '\n INFO: Image conversion complete: ' + outputFilePath )
 		if uploadVideo == True: 
@@ -284,12 +287,15 @@ def cleanup():
 		now = time.time()
 		time.sleep(5)
 		print('\n INFO: Starting removal of files older than ' + str(retention) + ' days... ')
-		for file in os.listdir(outputFolder):
-			filePath = os.path.join(outputFolder, file)
-			fileModified = os.stat(filePath).st_mtime
-			fileCompare = now - (retention * 86400)
-			if fileModified < fileCompare:
-				os.remove(filePath)
+		for item in os.listdir(outputFolder):
+			itemPath = os.path.join(outputFolder, item)
+			itemModified = os.stat(itemPath).st_mtime
+			itemCompare = now - (retention * 86400)
+			if itemModified < itemCompare:
+				if os.path.isdir(itemPath):
+					shutil.remove(itemPath)
+				else:
+					os.remove(itemPath)
 		print(' INFO: Cleanup complete')
 	except Exception as ex:
 		print('\n ERROR: ' + str(ex) )
@@ -343,7 +349,7 @@ try:
 				time.sleep(120)
 				yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
 				yesterdayStamp = yesterday.strftime('%Y%m%d')
-				firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '-00000001.jpg')
+				firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '/00000001.jpg')
 				videoExists = os.path.exists(outputFolder + yesterdayStamp + '.mp4')
 				if firstFrameExists == True and videoExists == False:
 					convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
