@@ -213,7 +213,7 @@ def analyzeLastImages():
 					if waitUntilAnalysisStatus == 1:
 						print(' INFO: Removing files created during initial analysis... ')
 						waitUntilAnalysisStatus = 0
-						for analysisFile in glob.iglob(outputFolder + '*~.jpg'):
+						for analysisFile in glob.iglob(outputFolder + started + '/*~.jpg'):
 							os.remove(analysisFile)
 					if measuredAverageBrightness < (darknessThreshold - 10) and measuredAverageBrightness > -1:
 						if camera.framerate >= 30:
