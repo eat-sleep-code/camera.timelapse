@@ -306,7 +306,7 @@ def cleanup():
 			itemCompare = now - (retention * 86400)
 			if itemModified < itemCompare:
 				if os.path.isdir(itemPath):
-					shutil.rmtree(itemPath)
+					shutil.rmtree(itemPath, ignore_errors=True)
 				else:
 					os.remove(itemPath)
 		print(' INFO: Cleanup complete')
