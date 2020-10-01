@@ -251,8 +251,11 @@ def analyzeLastImages():
 				# Ignore errors as sometimes a file will still be in use and can't be analyzed
 				pass
 			time.sleep(interval)
+		return True
 	except Exception:
 		print('\n WARNING: Could not analyze most recent image. ')
+		pass
+	return False
 
 # ------------------------------------------------------------------------------
 
@@ -267,9 +270,9 @@ def convertSequenceToVideo(dateToConvert):
 		outputFilePath = dateToConvertStamp + '.mp4'	
 		print('\n INFO: Converting existing image sequence to video... ')
 		# The following runs out of memory as it is not hardware accelerated, perhaps in the future?
-		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
+		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
-		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
+		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
 		renderingInProgress = False
 		print( '\n INFO: Image conversion complete: ' + outputFilePath )
 		if uploadVideo == True: 
@@ -282,9 +285,11 @@ def convertSequenceToVideo(dateToConvert):
 				pass
 		else:
 			print('\n INFO: To upload the video to YouTube, start the program with the argument: --uploadVideo True ')
+		return True
 	except ffmpeg.Error as ex:
 		print('\n ERROR: Could not convert sequence to video. ' + str(ex))
 		pass
+	return False
 
 # ------------------------------------------------------------------------------
 
@@ -305,8 +310,11 @@ def cleanup():
 				else:
 					os.remove(itemPath)
 		print(' INFO: Cleanup complete')
+		return True
 	except Exception as ex:
 		print('\n ERROR: ' + str(ex) )
+		pass
+	return False
 
 
 # === Timelapse Capture ========================================================
@@ -345,9 +353,11 @@ try:
 		analysisThread = threading.Thread(target=analyzeLastImages)
 		analysisThread.start()
 
-		if retention > 0:
-			cleanupThread = threading.Thread(target=cleanup)
-			cleanupThread.start()
+		if retention > 1:
+			while True:
+				cleanupThread = threading.Thread(target=cleanup)
+				cleanupThread.start()
+				time.sleep(86400)
 		else:
 			print('\n WARNING: Retaining captured files indefinitely ')
 			print('          Please ensure that sufficient storage exists or set a retention value ')
