@@ -12,6 +12,12 @@ echo -e '\033[93mInstalling prerequisites... \033[0m'
 sudo apt install -y git python3 python3-pip python3-picamera ffmpeg
 sudo pip3 install ffmpeg-python google-api-python-client oauth2client 
 
+echo '\033[93mProvisioning logs... \033[0m'
+sudo mkdir -p /home/pi/logs
+sudo chmod +rw /home/pi/logs
+sudo sed -i '\|^tmpfs /home/pi/logs|d' /etc/fstab
+sudo sed -i '$ a tmpfs /home/pi/logs tmpfs defaults,noatime,nosuid,size=16m 0 0' /etc/fstab
+sudo mount -a
 
 echo ''
 echo -e '\033[93mInstalling Camera... \033[0m'

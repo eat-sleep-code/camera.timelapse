@@ -5,6 +5,7 @@ import datetime
 import glob
 import fractions
 import keyboard
+import logging
 import numpy
 import os
 import shutil
@@ -14,7 +15,9 @@ import sys
 import threading
 import time
 
-version = '2020.09.27'
+version = '2020.10.02'
+
+os.environ['TERM'] = 'xterm-256color'
 
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
@@ -97,9 +100,6 @@ if outputFolder.endswith('/') == False:
 privacy = args.privacy or 'public'
 
 
-
-
-
 brightnessThreshold = 125
 darknessThreshold = 35
 
@@ -115,6 +115,32 @@ def clear():
 clear()
 
 
+# === Printing & Loggging ======================================================
+
+logging.basicConfig(filename='/home/pi/logs/camera.timelapse.log', level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+class console:
+	def print(message, prefix = ' ', suffix = ' '):
+		print(str(prefix) + str(message) + str(suffix)) 
+	def log(message, prefix = ' ', suffix = ' '):
+		print('\033[94m' + str(prefix) + str(message) + str(suffix)+ '\033[0m')
+		logging.info(str(message))
+	def debug(message, prefix = ' ', suffix = ' '):
+		print(str(prefix) + 'DEBUG: ' + str(message) + str(suffix))
+		logging.debug(str(message))
+	def info(message, prefix = ' ', suffix = ' '):
+		print(str(prefix) + 'INFO: ' + str(message) + str(suffix))
+		logging.info(str(message))
+	def warn(message, prefix = '\n ', suffix = ' '):
+		print('\033[93m' + str(prefix) + 'WARNING: ' + str(message) + str(suffix) + '\033[0m')
+		logging.warning(str(message))
+	def error(message, prefix = '\n ', suffix = ' '):
+		print('\033[91m' + str(prefix) + 'ERROR: ' + str(message) + str(suffix) + '\033[0m')
+		logging.error(str(message))
+	def critical(message, prefix = '\n ', suffix = '\n '):
+		print('\033[91m' + str(prefix) + 'CRITICAL: ' + str(message) + str(suffix) + '\033[0m')
+		logging.critical(str(message))
+	
+
 # === Functions ================================================================
 
 def getFileName(imageCounter = 1):
@@ -124,7 +150,7 @@ def getFileName(imageCounter = 1):
 	datestamp = now.strftime('%Y%m%d')
 	extension = '.jpg'
 	if waitUntilAnalysisStatus != -1:
-		extension = '~.jpg' 	
+		extension = '~.jpg' # These images are only used for analysis and not kept.	
 	return datestamp + '/' + str(imageCounter).zfill(8) + extension
 
 
@@ -138,11 +164,11 @@ def getFilePath(imageCounter = 1):
 		try:
 			os.makedirs(outputFolder + datestamp, exist_ok = True)
 		except OSError:
-			print ('\n ERROR: Creation of the output folder ' + outputFolder + datestamp + ' failed!' )
+			console.error('Creation of the output folder ' + outputFolder + datestamp + ' failed!')
 			echoOn()
 			quit()
 	except OSError:
-		print ('\n ERROR: Creation of the output folder ' + outputFolder + ' failed!' )
+		console.error('Creation of the output folder ' + outputFolder + ' failed!' )
 		echoOn()
 		quit()
 	else:
@@ -168,7 +194,7 @@ def captureTimelapse():
 
 		preAnalysisCounter = counter
 		
-		print(' INFO: Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')		
+		console.info('Starting timelapse sequence at an interval of ' + str(interval) + ' seconds...')		
 		while True:
 			if waitUntilAnalysisStatus == 0:
 				waitUntilAnalysisStatus = -1
@@ -183,7 +209,7 @@ def captureTimelapse():
 			counter += 1					
 			time.sleep(interval)
 	except Exception as ex: 
-		print('\n WARNING: Could not capture most recent image. ' + str(ex))
+		console.warn('Could not capture most recent image. ' + str(ex))
 		
 
 
@@ -196,7 +222,7 @@ def analyzeLastImages():
  	
 	try:
 		time.sleep(interval * 1.5) 
-		print('\n INFO: Starting image analysis... ')
+		console.info('Starting image analysis... ')
 		measuredBrightnessList = []
 		
 		while True:	
@@ -209,40 +235,39 @@ def analyzeLastImages():
 				measuredBrightnessList.append(float(measuredBrightness))
 				if len(measuredBrightnessList) >= (framerate * 0.25):
 					measuredAverageBrightness = statistics.mean(measuredBrightnessList)
-					print(' INFO: Average brightness of ' + str(int(framerate * 0.25)) + ' recent images: ' + str(measuredAverageBrightness))
+					console.info('Average brightness of ' + str(int(framerate * 0.25)) + ' recent images: ' + str(measuredAverageBrightness))
 					if waitUntilAnalysisStatus == 1:
-						print(' INFO: Removing files created during initial analysis... ')
+						console.info('Removing files created during initial analysis... ')
 						waitUntilAnalysisStatus = 0
 						for analysisFile in glob.iglob(outputFolder + started + '/*~.jpg'):
 							os.remove(analysisFile)
 					if measuredAverageBrightness < (darknessThreshold - 10) and measuredAverageBrightness > -1:
 						if camera.framerate >= 30:
-							print(' INFO: Entering long exposure mode based on analysis of last image set... ')
+							console.info('Entering long exposure mode based on analysis of last image set... ')
 							slowFramerate = fractions.Fraction(1, 10)							
 							try:							
 								camera.framerate = slowFramerate
 							except Exception as ex:
-								print('\n WARNING: Unable to set framerate to ' + str(slowFramerate) + ' ' + str(ex))
+								console.warn('Unable to set framerate to ' + str(slowFramerate) + ' ' + str(ex))
 								pass						
 					elif measuredAverageBrightness > (darknessThreshold + 10):
 						if camera.framerate < 30:
-							print(' INFO: Exiting long exposure mode based on analysis of last image set...  ')
+							console.info('Exiting long exposure mode based on analysis of last image set...  ')
 							camera.framerate = 30
 
 					if measuredAverageBrightness > (brightnessThreshold + 25) and measuredAverageBrightness > -1:
 						if camera.shutter_speed == 0 or camera.shutter_speed > 1000: 
-							print(' INFO: Increasing shutter speed based on analysis of last image set... [1000]')
+							console.info('Increasing shutter speed based on analysis of last image set... [1000]')
 							camera.shutter_speed = 1000
 						elif camera.shutter_speed > 100:
-							print(camera.shutter_speed)
-							print(' INFO: Increasing shutter speed based on analysis of last image set... [50]')
+							console.info('Increasing shutter speed based on analysis of last image set... [50]')
 							camera.shutter_speed = 50
 					elif measuredAverageBrightness < (brightnessThreshold - 25):
 						if camera.shutter_speed < 100 and camera.shutter_speed != 0:
-							print(' INFO: Decreasing shutter speed based on analysis of last image set... [1000]')
+							console.info('Decreasing shutter speed based on analysis of last image set... [1000]')
 							camera.shutter_speed = 1000
 						elif camera.shutter_speed > 900: 
-							print(' INFO: Setting shutter speed to "auto" based on analysis of last image set... ')
+							console.info('Setting shutter speed to "auto" based on analysis of last image set... ')
 							camera.shutter_speed = 0 # Auto
 					
 					measuredBrightnessList.clear()
@@ -253,7 +278,7 @@ def analyzeLastImages():
 			time.sleep(interval)
 		return True
 	except Exception:
-		print('\n WARNING: Could not analyze most recent image. ')
+		console.warn('Could not analyze most recent image. ')
 		pass
 	return False
 
@@ -268,53 +293,53 @@ def convertSequenceToVideo(dateToConvert):
 		renderingInProgress = True
 		dateToConvertStamp = dateToConvert.strftime('%Y%m%d')		
 		outputFilePath = dateToConvertStamp + '.mp4'	
-		print('\n INFO: Converting existing image sequence to video... ')
+		console.info('Converting existing image sequence to video... ')
 		# The following runs out of memory as it is not hardware accelerated, perhaps in the future?
 		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
 		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
 		renderingInProgress = False
-		print( '\n INFO: Image conversion complete: ' + outputFilePath )
+		console.info('Image conversion complete: ' + outputFilePath )
 		if uploadVideo == True: 
 			try:		
-				print('\n INFO: Uploading video to YouTube... ')	
+				console.info('Uploading video to YouTube... ')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime('%Y-%m-%d')
 				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title "' + dateToConvertStamp + '" --description "' + uploadDescription + '" --privacyStatus "' + privacy + '" --noauth_local_webserver ' , shell=True)
 			except Exception as ex:
-				print('\n WARNING: YouTube upload may have failed! ' + str(ex) ) 
+				console.warn('YouTube upload may have failed! ' + str(ex) ) 
 				pass
 		else:
-			print('\n INFO: To upload the video to YouTube, start the program with the argument: --uploadVideo True ')
+			console.info('To upload the video to YouTube, start the program with the argument: --uploadVideo True ')
 		return True
 	except ffmpeg.Error as ex:
-		print('\n ERROR: Could not convert sequence to video. ' + str(ex))
+		console.error('Could not convert sequence to video. ' + str(ex))
 		pass
 	return False
 
 # ------------------------------------------------------------------------------
 
 def cleanup():
-	try:
-		global outputFolder
-		global retention
-		now = time.time()
-		time.sleep(5)
-		print('\n INFO: Starting removal of files older than ' + str(retention) + ' days... ')
-		for item in os.listdir(outputFolder):
-			itemPath = os.path.join(outputFolder, item)
-			itemModified = os.stat(itemPath).st_mtime
-			itemCompare = now - (retention * 86400)
-			if itemModified < itemCompare:
-				if os.path.isdir(itemPath):
-					shutil.rmtree(itemPath, ignore_errors=True)
-				else:
-					os.remove(itemPath)
-		print(' INFO: Cleanup complete')
-		return True
-	except Exception as ex:
-		print('\n ERROR: ' + str(ex) )
-		pass
-	return False
+	while True:
+		try:
+			global outputFolder
+			global retention
+			now = time.time()
+			time.sleep(5)
+			console.info('Starting removal of files older than ' + str(retention) + ' days... ')
+			for item in os.listdir(outputFolder):
+				itemPath = os.path.join(outputFolder, item)
+				itemModified = os.stat(itemPath).st_mtime
+				itemCompare = now - (retention * 86400)
+				if itemModified < itemCompare:
+					if os.path.isdir(itemPath):
+						shutil.rmtree(itemPath, ignore_errors=True)
+					else:
+						os.remove(itemPath)
+			console.info('Cleanup complete')
+			time.sleep(86400)
+		except Exception as ex:
+			console.error(str(ex))
+			pass
 
 
 # === Timelapse Capture ========================================================
@@ -322,14 +347,12 @@ def cleanup():
 try: 
 	os.chdir('/home/pi') 
 
-	print('\n Camera (Timelapse) ' + version )
-	print('\n ----------------------------------------------------------------------\n')
+	console.log('Camera (Timelapse) ' + version, '\n ')
+	console.print('----------------------------------------------------------------------', '\n ', '\n ')
 	
-	#print(camera.shutter_speed)		
 	while True:
 		try:
 			if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
-				# clear()
 				echoOn()
 				break
 		except:
@@ -344,9 +367,9 @@ try:
 		camera.framerate = defaultFramerate
 		camera.shutter_speed = shutter
 		
-		# print(' Shutter Speed: ' + str(camera.exposure_speed)) 
+		# console.debug(' Shutter Speed: ' + str(camera.exposure_speed)) 
 		# camera.iso = 400
-		#print(' ISO: ' + str(camera.iso))
+		# console.debug(' ISO: ' + str(camera.iso))
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
 
@@ -354,25 +377,21 @@ try:
 		analysisThread.start()
 
 		if retention > 1:
-			while True:
-				cleanupThread = threading.Thread(target=cleanup)
-				cleanupThread.start()
-				time.sleep(86400)
+			cleanupThread = threading.Thread(target=cleanup)
+			cleanupThread.start()
 		else:
-			print('\n WARNING: Retaining captured files indefinitely ')
-			print('          Please ensure that sufficient storage exists or set a retention value ')
+			console.warn('Retaining captured files indefinitely!  Please ensure that sufficient storage exists or set a retention value ', '\n ')
 
 		while renderVideo:			
 			if renderingInProgress == False:
 				time.sleep(120)
 				yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
 				yesterdayStamp = yesterday.strftime('%Y%m%d')
-				firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '/00000001.jpg')
+				firstFrameExists = os.path.exists(outputFolder + '/' + yesterdayStamp + '/00000001.jpg')
 				videoExists = os.path.exists(outputFolder + yesterdayStamp + '.mp4')
 				if firstFrameExists == True and videoExists == False:
 					convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
 					convertThread.start()
-					#convertSequenceToVideo(yesterday)
 			time.sleep(3600)
 
 
@@ -380,6 +399,10 @@ except KeyboardInterrupt:
 	camera.close()
 	echoOn()
 	sys.exit(1)
+
+except Exception as ex:
+	console.error(ex)
+	echoOn()
 
 else:
 	echoOn()
