@@ -1,6 +1,7 @@
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 from apiclient.http import MediaFileUpload
+from functions import Echo, Console
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import run_flow, argparser
@@ -13,8 +14,10 @@ import sys
 import subprocess
 import time
 
-version = '2020.09.18'
+version = '2020.10.02'
 
+console = Console()
+echo = Echo()
 validPrivacyStatus = ('public', 'private', 'unlisted')
 
 # === Argument Handling ========================================================
@@ -45,19 +48,12 @@ apiServiceName = 'youtube'
 apiVersion = 'v3'
 
 
-# === Echo Control =============================================================
-
-def echoOff():
-	subprocess.run(['stty', '-echo'], check=True)
-def echoOn():
-	subprocess.run(['stty', 'echo'], check=True)
-
 
 
 # === Functions ================================================================
 
 def getAuthenticatedService(args):
-	print('\n YOUTUBE: Authenticating... ')
+	console.info('YOUTUBE: Authenticating... ', '\n ')
 	flow = flow_from_clientsecrets(configFile, scope=uploadScope, message='Please edit your config.json file.')
 	storage = Storage('%s-oauth2.json' % sys.argv[0])
 	credentials = storage.get()
@@ -70,7 +66,7 @@ def getAuthenticatedService(args):
 # ------------------------------------------------------------------------------
 
 def initalizeUpload(youtube, options):
-	print(' YOUTUBE: Initializing Upload... ')
+	console.info(' YOUTUBE: Initializing Upload... ')
 	tags = None
 	if options.keywords:
 		tags = options.keywords.split(',')
@@ -81,7 +77,7 @@ def initalizeUpload(youtube, options):
 # ------------------------------------------------------------------------------
 
 def resumableUpload(uploadRequest):
-	print(' YOUTUBE: Uploading... ')
+	console.info(' YOUTUBE: Uploading... ')
 	response = None
 	error = None
 	retryAttempt = 0
@@ -90,8 +86,8 @@ def resumableUpload(uploadRequest):
 			status, response = uploadRequest.next_chunk()
 			if response is not None:
 				if 'id' in response:
-					print(' YOUTUBE: Video id ' + str(response['id']) + ' was successfully uploaded.')
-					echoOn()
+					console.info(' YOUTUBE: Video id ' + str(response['id']) + ' was successfully uploaded.')
+					echo.on()
 					sys.exit(0)
 				else:
  					exit(' ERROR: The upload failed with an unexpected response of ' + str(response))
@@ -104,14 +100,14 @@ def resumableUpload(uploadRequest):
 			error = ' YOUTUBE: A retriable error occurred: ' + str(ex)
 
 		if error is not None:
-			print(error)
+			console.error(error)
 			retryAttempt += 1
 			if retryAttempt > maxRetries:
 				exit(' ERROR: Maximum retries exceeded.')
 
 			maxSleep = 2 ** retry
 			sleepTime = random.random() * maxSleep
-			print(' YOUTUBE: Sleeping ' + sleepTime + ' and then retrying...')
+			console.info(' YOUTUBE: Sleeping ' + sleepTime + ' and then retrying...')
 			time.sleep(sleepTime)
 
 
@@ -124,12 +120,12 @@ try:
 		try:
 			initalizeUpload(youtube, args)
 		except HttpError as ex:
-			print(' ERROR: An HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content))
+			console.error(' ERROR: An HTTP error ' + str(ex.resp.status) + ' occurred: ' + str(ex.content))
 
 except KeyboardInterrupt:
-	echoOn()
+	echo.on()
 	sys.exit(1)
 
 else:
-	echoOn()
+	echo.on()
 	sys.exit(0)

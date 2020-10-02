@@ -1,3 +1,4 @@
+from functions import Echo, Console
 from picamera import PiCamera
 from PIL import Image
 import argparse
@@ -5,7 +6,6 @@ import datetime
 import glob
 import fractions
 import keyboard
-import logging
 import numpy
 import os
 import shutil
@@ -19,6 +19,8 @@ version = '2020.10.02'
 
 os.environ['TERM'] = 'xterm-256color'
 
+console = Console()
+echo = Echo()
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
 camera.resolution = (1920, 1080)
@@ -102,44 +104,8 @@ privacy = args.privacy or 'public'
 
 brightnessThreshold = 125
 darknessThreshold = 35
-
-
-# === Echo Control =============================================================
-
-def echoOff():
-	subprocess.run(['stty', '-echo'], check=True)
-def echoOn():
-	subprocess.run(['stty', 'echo'], check=True)
-def clear():
-	subprocess.call('clear' if os.name == 'posix' else 'cls')
-clear()
-
-
-# === Printing & Loggging ======================================================
-
-logging.basicConfig(filename='/home/pi/logs/camera.timelapse.log', level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-class console:
-	def print(message, prefix = ' ', suffix = ' '):
-		print(str(prefix) + str(message) + str(suffix)) 
-	def log(message, prefix = ' ', suffix = ' '):
-		print('\033[94m' + str(prefix) + str(message) + str(suffix)+ '\033[0m')
-		logging.info(str(message))
-	def debug(message, prefix = ' ', suffix = ' '):
-		print(str(prefix) + 'DEBUG: ' + str(message) + str(suffix))
-		logging.debug(str(message))
-	def info(message, prefix = ' ', suffix = ' '):
-		print(str(prefix) + 'INFO: ' + str(message) + str(suffix))
-		logging.info(str(message))
-	def warn(message, prefix = '\n ', suffix = ' '):
-		print('\033[93m' + str(prefix) + 'WARNING: ' + str(message) + str(suffix) + '\033[0m')
-		logging.warning(str(message))
-	def error(message, prefix = '\n ', suffix = ' '):
-		print('\033[91m' + str(prefix) + 'ERROR: ' + str(message) + str(suffix) + '\033[0m')
-		logging.error(str(message))
-	def critical(message, prefix = '\n ', suffix = '\n '):
-		print('\033[91m' + str(prefix) + 'CRITICAL: ' + str(message) + str(suffix) + '\033[0m')
-		logging.critical(str(message))
 	
+
 
 # === Functions ================================================================
 
@@ -165,11 +131,11 @@ def getFilePath(imageCounter = 1):
 			os.makedirs(outputFolder + datestamp, exist_ok = True)
 		except OSError:
 			console.error('Creation of the output folder ' + outputFolder + datestamp + ' failed!')
-			echoOn()
+			echo.on()
 			quit()
 	except OSError:
 		console.error('Creation of the output folder ' + outputFolder + ' failed!' )
-		echoOn()
+		echo.on()
 		quit()
 	else:
 		return outputFolder + getFileName(imageCounter)
@@ -345,6 +311,7 @@ def cleanup():
 # === Timelapse Capture ========================================================
 
 try: 
+	clear()
 	os.chdir('/home/pi') 
 
 	console.log('Camera (Timelapse) ' + version, '\n ')
@@ -353,7 +320,7 @@ try:
 	while True:
 		try:
 			if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
-				echoOn()
+				echo.on()
 				break
 		except:
 			# Keyboard commands will throw an exception in SSH sessions, so ignore
@@ -397,13 +364,13 @@ try:
 
 except KeyboardInterrupt:
 	camera.close()
-	echoOn()
+	echo.on()
 	sys.exit(1)
 
 except Exception as ex:
 	console.error(ex)
-	echoOn()
+	echo.on()
 
 else:
-	echoOn()
+	echo.on()
 	sys.exit(0)
