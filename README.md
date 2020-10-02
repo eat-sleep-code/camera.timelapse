@@ -57,19 +57,6 @@ Want to start the timelapse sequence every time you boot your Raspberry Pi?  Her
    * If you would like to add any of aforementioned options you may do so by editing the service file.
 * Run `~/camera.timelapse/install-camera.timelapse.service.sh`
 
-### Log File Management
-To avoid your SD card filling up with log files when running your the timelapse as a service, consider moving your logs into a temporary in-memory file system.  
-
-This can by achieved by executing `sudo nano /etc/fstab` and add the following two lines.    
-
-__:warning: WARNING:__ Use caution when editing this file.   A typographical error can leave your Raspberry Pi in an unbootable state.
-
-```
-tmpfs /tmp tmpfs defaults,noatime,nosuid 0 0
-tmpfs /var/log tmpfs defaults,noatime,nosuid,size=16m 0 0
-```
-:information_source: *The above change results in log files being cleared every time your Raspberry Pi reboots.   Remove the above modifications if you need to analyze logs across multiple reboots.*
-
 ---
 
 ## Infrared Cameras
