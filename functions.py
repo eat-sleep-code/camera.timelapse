@@ -2,6 +2,7 @@ import logging
 import os
 import subprocess
 
+logPath = '/home/pi/logs/camera.timelapse.log'
 
 # === Echo Control =============================================================
 
@@ -17,7 +18,9 @@ class Echo:
 
 # === Printing & Logging ======================================================
 
-logging.basicConfig(filename='/home/pi/logs/camera.timelapse.log', level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.basicConfig(filename=logPath, level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
+
 class Console:
 	def print(self, message, prefix = ' ', suffix = ' '):
 		print(str(prefix) + str(message) + str(suffix)) 
