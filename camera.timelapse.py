@@ -311,7 +311,7 @@ def cleanup():
 # === Timelapse Capture ========================================================
 
 try: 
-	clear()
+	echo.clear()
 	os.chdir('/home/pi') 
 
 	console.log('Camera (Timelapse) ' + version, '\n ')
