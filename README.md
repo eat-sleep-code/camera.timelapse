@@ -34,6 +34,7 @@ camera.timelapse <options>
 + _--rotate_ : Rotate the camera in 90&deg; increments     *(default: 0)*
 + _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)*
 + _--retention_ : Set the number of days to locally retain the captured files    *(default: 7)*
++ _--waitUntilAnalysis_ : Set whether to perform an initial analysis.     *(default: False)*
 + _--renderVideo_ : Set whether a video is generated every 24 hours     *(default: True)*
 + _--uploadVideo_ : Set whether to automatically upload videos to YouTube    *(default: False)*
 + _--privacy_ : Set the privacy status of the YouTube video  *(default: public)*
