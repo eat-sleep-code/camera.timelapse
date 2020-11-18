@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 
-version = '2020.10.02'
+version = '2020.11.18'
 
 os.environ['TERM'] = 'xterm-256color'
 
@@ -24,7 +24,7 @@ echo = Echo()
 camera = PiCamera()
 #camera.resolution = camera.MAX_RESOLUTION
 camera.resolution = (1920, 1080)
-camera.sensor_mode = 3
+#camera.sensor_mode = 3 # Incompatible with Arducam OV5647 NOIR Camera
 camera.framerate = 1
 
 
