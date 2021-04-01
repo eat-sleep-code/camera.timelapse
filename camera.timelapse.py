@@ -15,10 +15,16 @@ import sys
 import threading
 import time
 
-version = '2020.11.18'
+version = '2021.04.01'
+
+# Kill other camera script(s)
+try:
+	cameraRemoteScript = "/home/pi/camera.remote/camera.py"
+	subprocess.check_call(['pkill', '-9', '-f', cameraRemoteScript])
+except Exception as ex:
+	pass
 
 os.environ['TERM'] = 'xterm-256color'
-
 console = Console()
 echo = Echo()
 camera = PiCamera()
