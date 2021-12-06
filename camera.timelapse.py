@@ -15,7 +15,7 @@ import sys
 import threading
 import time
 
-version = '2021.04.01'
+version = '2021.12.06'
 
 # Kill other camera script(s)
 try:
@@ -177,11 +177,14 @@ def captureTimelapse():
 				started = datetime.datetime.now().strftime('%Y%m%d')
 				counter = 1
 			
-			camera.capture(getFilePath(counter))
-			counter += 1					
-			time.sleep(interval)
+			try:
+				camera.capture(getFilePath(counter))
+				counter += 1					
+				time.sleep(interval)
+			except: Exception as ex:
+				console.warn('Could not capture most recent image. ' + str(ex))
 	except Exception as ex: 
-		console.warn('Could not capture most recent image. ' + str(ex))
+		console.error('Error occurred during capture loop.  ' + str(ex))
 		
 
 

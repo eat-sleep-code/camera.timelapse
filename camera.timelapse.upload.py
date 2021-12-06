@@ -14,7 +14,7 @@ import sys
 import subprocess
 import time
 
-version = '2020.10.02'
+version = '2021.12.06'
 
 console = Console()
 echo = Echo()

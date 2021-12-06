@@ -22,6 +22,7 @@ sudo mount -a
 echo ''
 echo -e '\033[93mInstalling Camera... \033[0m'
 cd ~
+sudo mv ~/camera.timelapse/config.json ~/camera.timelapse-config.json.bak 2> /dev/null || true
 sudo rm -Rf ~/camera.timelapse
 sudo git clone https://github.com/eat-sleep-code/camera.timelapse
 sudo chown -R $USER:$USER camera.timelapse
