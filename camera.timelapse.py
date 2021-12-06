@@ -180,7 +180,7 @@ def captureTimelapse():
 				camera.capture(getFilePath(counter))
 				counter += 1					
 				time.sleep(interval)
-			except: Exception as ex:
+			except Exception as ex:
 				console.warn('Could not capture most recent image. ' + str(ex))
 	except Exception as ex: 
 		console.error('Error occurred during capture loop.  ' + str(ex))
