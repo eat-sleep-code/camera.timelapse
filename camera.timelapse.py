@@ -23,7 +23,7 @@ try:
 except Exception as ex:
 	pass
 
-os.environ['TERM'] = 'xterm-256color'
+
 console = Console()
 echo = Echo()
 camera = PiCamera()
@@ -49,7 +49,7 @@ parser.add_argument('--privacy', dest='privacy', help='Set the privacy status of
 
 
 args = parser.parse_args()
-
+  
 
 interval = args.interval or 10
 try:
@@ -99,7 +99,7 @@ if uploadVideo != True:
 	uploadVideo = False
 
 
-outputFolder = args.outputFolder or 'dcim/'
+outputFolder = args.outputFolder or '/home/pi/dcim/'
 if outputFolder.endswith('/') == False:
 	outputFolder = outputFolder+'/'
 
@@ -176,8 +176,9 @@ def captureTimelapse():
 				started = datetime.datetime.now().strftime('%Y%m%d')
 				counter = 1
 			
+			filePath = getFilePath(counter)
 			try:
-				camera.capture(getFilePath(counter))
+				camera.capture(filePath)
 				counter += 1					
 				time.sleep(interval)
 			except Exception as ex:

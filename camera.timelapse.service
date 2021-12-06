@@ -8,6 +8,7 @@ StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=Camera Timelapse
 User=pi
+Group=pi
 
 [Install]
 WantedBy=multi-user.target

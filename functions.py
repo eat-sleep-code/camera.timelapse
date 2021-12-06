@@ -7,12 +7,13 @@ logPath = '/home/pi/logs/camera.timelapse.log'
 # === Echo Control =============================================================
 
 class Echo:
-    def off(self):
-        subprocess.run(['stty', '-echo'], check=True)
-    def on(self):
-        subprocess.run(['stty', 'echo'], check=True)
-    def clear(self):
-        subprocess.call('clear' if os.name == 'posix' else 'cls')
+	os.environ['TERM'] = 'xterm-256color'
+	def off(self):
+		subprocess.run(['stty', '-echo'], check=True)
+	def on(self):
+		subprocess.run(['stty', 'echo'], check=True)
+	def clear(self):
+		subprocess.call('clear' if os.name == 'posix' else 'cls')
 
 
 
