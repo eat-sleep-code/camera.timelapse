@@ -5,7 +5,6 @@ import argparse
 import datetime
 import glob
 import fractions
-import keyboard
 import numpy
 import os
 import shutil

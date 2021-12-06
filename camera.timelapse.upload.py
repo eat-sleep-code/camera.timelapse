@@ -7,7 +7,6 @@ from oauth2client.file import Storage
 from oauth2client.tools import run_flow, argparser
 import http.client
 import httplib2
-import keyboard
 import os
 import random
 import sys
