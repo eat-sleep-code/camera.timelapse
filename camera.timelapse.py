@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 
-version = '2021.12.06'
+version = '2021.12.20'
 
 # Kill other camera script(s)
 try:
@@ -22,7 +22,7 @@ try:
 	subprocess.check_call(['pkill', '-9', '-f', cameraRemoteScript])
 except Exception as ex:
 	pass
-
+ 
 
 console = Console()
 echo = Echo()
@@ -179,7 +179,14 @@ def captureTimelapse():
 			filePath = getFilePath(counter)
 			try:
 				camera.capture(filePath)
-				counter += 1					
+				
+				# Avoid 0 length or missing files from breaking ffmpeg encoding
+				time.sleep(1)
+				if os.path.exists(filePath):
+					if os.stat(filePath).st_size > 1000:
+						counter += 1 # Only increment if file exists and is greater than 1KB in size (no timelapse worthy mage is likely to be smaller).
+					else: 
+						os.remove(filePath); # Remove existing files that are too small	
 				time.sleep(interval)
 			except Exception as ex:
 				console.warn('Could not capture most recent image. ' + str(ex))
@@ -273,7 +280,6 @@ def convertSequenceToVideo(dateToConvert):
 		# subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -vcodec libx265 -crf 20 -preset slow '+ outputFilePath, shell=True)
 		# The following is not as an efficient codec, but encoding is hardware accelerated and should work for the transient purposes it is used for.
 		subprocess.call('cd ' + outputFolder +  '&& ffmpeg -y -r 60 -fflags discardcorrupt -i '+dateToConvertStamp+'/%08d.jpg -s hd1080 -qscale:v 3 -vcodec mpeg4 '+ outputFilePath, shell=True)
-		renderingInProgress = False
 		console.info('Image conversion complete: ' + outputFilePath )
 		if uploadVideo == True: 
 			try:		
@@ -285,6 +291,8 @@ def convertSequenceToVideo(dateToConvert):
 				pass
 		else:
 			console.info('To upload the video to YouTube, start the program with the argument: --uploadVideo True ')
+
+		renderingInProgress = False
 		return True
 	except ffmpeg.Error as ex:
 		console.error('Could not convert sequence to video. ' + str(ex))
@@ -363,7 +371,7 @@ try:
 				time.sleep(120)
 				yesterday = (datetime.date.today() - datetime.timedelta(days = 1))
 				yesterdayStamp = yesterday.strftime('%Y%m%d')
-				firstFrameExists = os.path.exists(outputFolder + '/' + yesterdayStamp + '/00000001.jpg')
+				firstFrameExists = os.path.exists(outputFolder + yesterdayStamp + '/00000001.jpg')
 				videoExists = os.path.exists(outputFolder + yesterdayStamp + '.mp4')
 				if firstFrameExists == True and videoExists == False:
 					convertThread = threading.Thread(target=convertSequenceToVideo, args=(yesterday,))
