@@ -2,11 +2,13 @@
 Take timelapse photos with a Raspberry Pi camera and automatically generate an MP4 on a daily basis.  Optionally upload the daily timelapse to YouTube.
 
 ---
+
 ## Getting Started
 
 - Use [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) to:
   - Set the Memory Split value to a value of at least 192MB
   - Enable the CSI camera interface
+  - Enable Legacy Camera Support (if applicable)
   - Set up your WiFi connection
 - Connect the Raspberry Pi camera to your Raspberry Pi
 
