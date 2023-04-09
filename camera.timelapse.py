@@ -14,7 +14,7 @@ import sys
 import threading
 import time
 
-version = '2023.01.18'
+version = '2023.04.09'
 
 # Kill other camera script(s)
 try:
