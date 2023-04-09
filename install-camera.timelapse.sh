@@ -7,10 +7,12 @@ echo -e ''
 echo -e '\033[93mUpdating package repositories... \033[0m'
 sudo apt update
 
+
 echo ''
 echo -e '\033[93mInstalling prerequisites... \033[0m'
 sudo apt install -y git python3 python3-pip python3-picamera ffmpeg
-sudo pip3 install ffmpeg-python google-api-python-client google-auth-httplib2 google-auth-oauthlib --force
+sudo pip3 install ffmpeg-python google-api-python-client google-auth-httplib2 google-auth-oauthlib moviepy --force
+
 
 echo '\033[93mProvisioning logs... \033[0m'
 sudo mkdir -p /home/pi/logs
@@ -18,6 +20,7 @@ sudo chmod +rw /home/pi/logs
 sudo sed -i '\|^tmpfs /home/pi/logs|d' /etc/fstab
 sudo sed -i '$ a tmpfs /home/pi/logs tmpfs defaults,noatime,nosuid,size=16m 0 0' /etc/fstab
 sudo mount -a
+
 
 echo ''
 echo -e '\033[93mInstalling Camera... \033[0m'
@@ -39,6 +42,7 @@ sudo mv camera.timelapse.service /etc/systemd/system/camera.timelapse.service
 sudo chown root:root /etc/systemd/system/camera.timelapse.service
 sudo chmod +x *.sh 
 echo 'Please see the README file for more information on configuring the service.'
+
 
 cd ~
 echo ''
