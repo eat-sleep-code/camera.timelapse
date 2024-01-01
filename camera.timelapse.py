@@ -30,7 +30,6 @@ except Exception as ex:
 console = Console()
 echo = Echo()
 camera = Picamera2()
-camera.framerate = 1
 #camera.still_configuration.enable_raw()
 camera.still_configuration.main.size = (1920, 1080)
 #camera.still_configuration.buffer_count = 2
@@ -352,14 +351,9 @@ try:
 		if rotate > 0:
 			camera.rotation = rotate
 
-		camera.start_preview(fullscreen=False, resolution=(1920, 1080), window=(60, 60, 640, 360))				
-		time.sleep(3)	
 		camera.framerate = defaultFramerate
 		camera.shutter_speed = shutter
 		
-		# console.debug(' Shutter Speed: ' + str(camera.exposure_speed)) 
-		# camera.iso = 400
-		# console.debug(' ISO: ' + str(camera.iso))
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
 
