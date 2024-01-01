@@ -29,7 +29,7 @@ except Exception as ex:
 
 console = Console()
 echo = Echo()
-camera = PiCamera2()
+camera = Picamera2()
 camera.framerate = 1
 #camera.still_configuration.enable_raw()
 camera.still_configuration.main.size = (1920, 1080)
