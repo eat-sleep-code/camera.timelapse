@@ -1,5 +1,8 @@
 from functions import Echo, Console
-from picamera import PiCamera
+from libcamera import ColorSpace
+from picamera2 import MappedArray, Picamera2
+from picamera2.controls import Controls
+from picamera2.outputs import FileOutput
 from PIL import Image
 import argparse
 import datetime
@@ -26,11 +29,13 @@ except Exception as ex:
 
 console = Console()
 echo = Echo()
-camera = PiCamera()
-#camera.resolution = camera.MAX_RESOLUTION
-camera.resolution = (1920, 1080)
-#camera.sensor_mode = 3 # Incompatible with Arducam OV5647 NOIR Camera
+camera = PiCamera2()
 camera.framerate = 1
+#camera.still_configuration.enable_raw()
+camera.still_configuration.main.size = (1920, 1080)
+#camera.still_configuration.buffer_count = 2
+camera.still_configuration.colour_space = ColorSpace.Sycc()
+
 
 
 # === Argument Handling ========================================================
@@ -178,7 +183,8 @@ def captureTimelapse():
 			
 			filePath = getFilePath(counter)
 			try:
-				camera.capture(filePath)
+				request = camera.switch_mode_and_capture_request('still')
+				request.save('main', filePath)
 				
 				# Avoid 0 length or missing files from breaking ffmpeg encoding
 				time.sleep(1)
