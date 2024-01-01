@@ -14,7 +14,8 @@ sudo apt install -y git python3 python3-pip python3-picamera2 ffmpeg
 sudo pip3 install ffmpeg-python google-api-python-client google-auth-httplib2 google-auth-oauthlib moviepy --force --break-system-packages
 
 
-echo '\033[93mProvisioning logs... \033[0m'
+echo ''
+echo -e '\033[93mProvisioning logs... \033[0m'
 sudo mkdir -p /home/pi/logs
 sudo chmod +rw /home/pi/logs
 sudo sed -i '\|^tmpfs /home/pi/logs|d' /etc/fstab
