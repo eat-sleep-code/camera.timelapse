@@ -1,5 +1,5 @@
 from functions import Echo, Console
-from libcamera import ColorSpace
+from libcamera import ColorSpace, controls
 from picamera2 import MappedArray, Picamera2
 from picamera2.controls import Controls
 from picamera2.outputs import FileOutput
@@ -17,7 +17,7 @@ import sys
 import threading
 import time
 
-version = '2023.04.09'
+version = '2024.01.21'
 
 # Kill other camera script(s)
 try:
@@ -30,11 +30,10 @@ except Exception as ex:
 console = Console()
 echo = Echo()
 camera = Picamera2()
-#camera.still_configuration.enable_raw()
-camera.still_configuration.main.size = (1920, 1080)
-#camera.still_configuration.buffer_count = 2
+stillConfiguration = camera.create_still_configuration()
+camera.still_configuration.size = (1920, 1080)
 camera.still_configuration.colour_space = ColorSpace.Sycc()
-
+camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 
 
 # === Argument Handling ========================================================
@@ -156,7 +155,7 @@ def captureTimelapse():
 		global interval
 		global outputFolder
 		global waitUntilAnalysisStatus
-
+		
 		started = datetime.datetime.now().strftime('%Y%m%d')
 
 		# Set counter start based on last image taken today (allows multiple distinct sequences to be taken in one day)
@@ -182,15 +181,21 @@ def captureTimelapse():
 			
 			filePath = getFilePath(counter)
 			try:
-				request = camera.switch_mode_and_capture_request('still')
+				console.info('Starting capture of ' + str(filePath) + ' ...')		
+				request = camera.switch_mode_and_capture_request(stillConfiguration)
+				console.info('Capture complete, saving file ' + str(filePath) + ' ...')						
 				request.save('main', filePath)
+				console.info('File save complete, releasing request for ' + str(filePath) + ' ...')
+				request.release()
+				console.info('Request release complete for ' + str(filePath) + ' ...')		
 				
 				# Avoid 0 length or missing files from breaking ffmpeg encoding
 				time.sleep(1)
 				if os.path.exists(filePath):
 					if os.stat(filePath).st_size > 1000:
 						counter += 1 # Only increment if file exists and is greater than 1KB in size (no timelapse worthy mage is likely to be smaller).
-					else: 
+					else:
+						console.warn(str(filePath) + ' was too small (' + str(os.stat(filePath).st_size) + ')...')
 						os.remove(filePath); # Remove existing files that are too small	
 				time.sleep(interval)
 			except Exception as ex:
