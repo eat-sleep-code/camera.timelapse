@@ -6,7 +6,6 @@ Take timelapse photos with a Raspberry Pi camera and automatically generate an M
 ## Getting Started
 
 - Use [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) to:
-  - Set the Memory Split value to a value of at least 192MB
   - Enable the CSI camera interface
   - Enable Legacy Camera Support (if applicable)
   - Set up your WiFi connection
@@ -75,4 +74,4 @@ awb_auto_is_greyworld=1
 Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more to take advantage of an Infrared Camera.
 
 ---
-:information_source: *This application was developed using a Raspberry Pi HQ (2020) camera and Raspberry Pi 3B+ and Raspberry Pi 4B boards. It has also been tested using v2.1 Raspberry Pi 8MP cameras and Pi Zero W boards.   Issues may arise if you are using either third party or older hardware.*
+:information_source: *This application was developed using a Raspberry Pi HQ (2020) camera and Raspberry Pi 4B boards. It has also been tested using v3.x Raspberry Pi 12MP cameras and Pi Zero 2W boards.   Issues may arise if you are using either third party or older hardware.*

@@ -19,6 +19,7 @@ class Echo:
 
 # === Printing & Logging ======================================================
 
+os.environ["LIBCAMERA_LOG_LEVELS"] = "3"
 logging.basicConfig(filename=logPath, level=logging.INFO, format='%(asctime)s: %(levelname)s: %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 

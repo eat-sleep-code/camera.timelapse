@@ -17,7 +17,8 @@ import sys
 import threading
 import time
 
-version = '2024.01.21'
+version = '2024.01.22'
+
 
 # Kill other camera script(s)
 try:
@@ -34,6 +35,7 @@ stillConfiguration = camera.create_still_configuration()
 camera.still_configuration.size = (1920, 1080)
 camera.still_configuration.colour_space = ColorSpace.Sycc()
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+camera.start(show_preview=False)
 
 
 # === Argument Handling ========================================================

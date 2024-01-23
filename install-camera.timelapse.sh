@@ -35,6 +35,7 @@ sudo chmod +x camera.timelapse.py
 sudo chmod +x camera.timelapse.upload.py
 sudo chmod +x echo-server.py
 sudo mkdir -p ~/dcim
+sudo chown -R $USER:$USER ~/dcim
 sudo mkdir -p tokens
 
 
