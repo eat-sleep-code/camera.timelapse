@@ -17,7 +17,7 @@ import sys
 import threading
 import time
 
-version = '2024.01.22'
+version = '2024.01.23'
 
 
 # Kill other camera script(s)
@@ -35,7 +35,6 @@ stillConfiguration = camera.create_still_configuration()
 camera.still_configuration.size = (1920, 1080)
 camera.still_configuration.colour_space = ColorSpace.Sycc()
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-camera.start(show_preview=False)
 
 
 # === Argument Handling ========================================================
@@ -344,6 +343,7 @@ try:
 	console.print('----------------------------------------------------------------------', '\n ', '\n ')
 	
 	while True:
+		
 		try:
 			if keyboard.is_pressed('ctrl+c') or keyboard.is_pressed('esc'):
 				echo.on()
@@ -353,10 +353,18 @@ try:
 			pass
 			
 		if rotate > 0:
+			console.warn('Rotating capture ' + str(rotate)+ ' degrees.', '\n ')
 			camera.rotation = rotate
 
 		camera.framerate = defaultFramerate
 		camera.shutter_speed = shutter
+
+		try:
+			camera.start(show_preview=False)
+			time.sleep(1)
+		except:
+			console.warn('Could not start camera.   Is it already in use? ', '\n ')
+			pass
 		
 		captureThread = threading.Thread(target=captureTimelapse)
 		captureThread.start()
@@ -368,7 +376,7 @@ try:
 			cleanupThread = threading.Thread(target=cleanup)
 			cleanupThread.start()
 		else:
-			console.warn('Retaining captured files indefinitely!  Please ensure that sufficient storage exists or set a retention value ', '\n ')
+			console.warn('Retaining captured files indefinitely!  Please ensure that sufficient storage exists or set a retention value. ', '\n ')
 
 		while renderVideo:			
 			if renderingInProgress == False:
