@@ -183,13 +183,10 @@ def captureTimelapse():
 			
 			filePath = getFilePath(counter)
 			try:
-				console.info('Starting capture of ' + str(filePath) + ' ...')		
+				console.info('Capturing ' + str(filePath) + ' ...')		
 				request = camera.switch_mode_and_capture_request(stillConfiguration)
-				console.info('Capture complete, saving file ' + str(filePath) + ' ...')						
 				request.save('main', filePath)
-				console.info('File save complete, releasing request for ' + str(filePath) + ' ...')
 				request.release()
-				console.info('Request release complete for ' + str(filePath) + ' ...')		
 				
 				# Avoid 0 length or missing files from breaking ffmpeg encoding
 				time.sleep(1)
