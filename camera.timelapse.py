@@ -221,7 +221,7 @@ def captureTimelapse():
 						counter += 1 # Only increment if file exists and is greater than 1KB in size (no timelapse worthy mage is likely to be smaller).
 						# If rotation was specified, call method to alter EXIF data
 						if rotate > 0:
-							rotateImage(rotate)
+							rotateImage(filePath, rotate)
 					else:
 						console.warn(str(filePath) + ' was too small (' + str(os.stat(filePath).st_size) + ')...')
 						os.remove(filePath); # Remove existing files that are too small	
