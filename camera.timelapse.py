@@ -1,9 +1,9 @@
 from functions import Echo, Console
-from libcamera import ColorSpace, controls
+from libcamera import ColorSpace, controls, Transform
 from picamera2 import MappedArray, Picamera2
 from picamera2.controls import Controls
 from picamera2.outputs import FileOutput
-from PIL import Image
+from PIL import Image, ExifTags
 import argparse
 import datetime
 import glob
@@ -17,7 +17,7 @@ import sys
 import threading
 import time
 
-version = '2024.01.23'
+version = '2024.01.24'
 
 
 # Kill other camera script(s)
@@ -151,10 +151,37 @@ def getFilePath(imageCounter = 1):
 
 # ------------------------------------------------------------------------------
 
+def rotateImage(filePath, angle):
+	try:
+		image = Image.open(filePath)
+
+		EXIFData = {}
+
+		if hasattr(image, "_getexif") and image._getexif() is not None:
+			EXIFData = dict(image._getexif().items())
+
+		newOrientation = 1
+		if angle == 90:
+			newOrientation = 6
+		elif angle == 180:
+			newOrientation = 3
+		elif angle == 270:
+			newOrientation = 8
+			
+		EXIFData[ExifTags.Orientation] = newOrientation
+
+		image.save(filePath, exif=image.info['exif'])
+	except Exception as ex:
+		console.warn('Could not rotate ' + filePath + ', ' + str(ex))
+		pass
+    
+# ------------------------------------------------------------------------------
+
 def captureTimelapse():
 	try:
 		global interval
 		global outputFolder
+		global rotate
 		global waitUntilAnalysisStatus
 		
 		started = datetime.datetime.now().strftime('%Y%m%d')
@@ -192,6 +219,9 @@ def captureTimelapse():
 				if os.path.exists(filePath):
 					if os.stat(filePath).st_size > 1000:
 						counter += 1 # Only increment if file exists and is greater than 1KB in size (no timelapse worthy mage is likely to be smaller).
+						# If rotation was specified, call method to alter EXIF data
+						if rotate > 0:
+							rotateImage(rotate)
 					else:
 						console.warn(str(filePath) + ' was too small (' + str(os.stat(filePath).st_size) + ')...')
 						os.remove(filePath); # Remove existing files that are too small	
@@ -201,8 +231,6 @@ def captureTimelapse():
 	except Exception as ex: 
 		console.error('Error occurred during capture loop.  ' + str(ex))
 		
-
-
 # ------------------------------------------------------------------------------
 
 def analyzeLastImages():
@@ -352,9 +380,7 @@ try:
 			# Keyboard commands will throw an exception in SSH sessions, so ignore
 			pass
 			
-		if rotate > 0:
-			console.warn('Rotating capture ' + str(rotate)+ ' degrees.', '\n ')
-			camera.rotation = rotate
+			
 
 		camera.framerate = defaultFramerate
 		camera.shutter_speed = shutter
