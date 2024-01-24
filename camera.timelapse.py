@@ -168,7 +168,7 @@ def rotateImage(filePath, angle):
 		elif angle == 270:
 			newOrientation = 8
 			
-		EXIFData[ExifTags.Orientation] = newOrientation
+		EXIFData[274] = newOrientation
 
 		image.save(filePath, exif=image.info['exif'])
 	except Exception as ex:
