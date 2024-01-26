@@ -169,17 +169,18 @@ def rotateImage(filePath, angle):
 		
 		exif_bytes = piexif.dump(exif_dict)
 		
-		if angle == 90:
+		if newOrientation == 6:
 			image = image.rotate(-90, expand=True)
-		elif angle == 180:
+		elif newOrientation == 3:
 			image = image.rotate(180, expand=True)
-		elif angle == 270:
+		elif newOrientation == 8:
 			image = image.rotate(90, expand=True)
-		
+
 		image.save(filePath, exif=exif_bytes)
 		
 	except Exception as ex:
 		print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
+
 
 # ------------------------------------------------------------------------------
 
