@@ -3,7 +3,7 @@ from libcamera import ColorSpace, controls, Transform
 from picamera2 import MappedArray, Picamera2
 from picamera2.controls import Controls
 from picamera2.outputs import FileOutput
-from PIL import Image, ExifTags
+from PIL import Image
 import argparse
 import datetime
 import glob
@@ -17,7 +17,7 @@ import sys
 import threading
 import time
 
-version = '2024.01.24'
+version = '2024.01.26'
 
 
 # Kill other camera script(s)
@@ -152,34 +152,36 @@ def getFilePath(imageCounter = 1):
 # ------------------------------------------------------------------------------
 
 def rotateImage(filePath, angle):
-	try:
-		image = Image.open(filePath)
-		EXIFData = {}
+    try:
+        image = Image.open(filePath)
+        EXIFData = {}
 
-		if hasattr(image, "_getexif") and image._getexif() is not None:
-			EXIFData = dict(image._getexif().items())
+        if hasattr(image, "_getexif") and image._getexif() is not None:
+            EXIFData = dict(image._getexif().items())
 
-		newOrientation = 1
-		if angle == 90:
-			newOrientation = 6
-		elif angle == 180:
-			newOrientation = 3
-		elif angle == 270:
-			newOrientation = 8
-			
-		EXIFData[274] = newOrientation
+        newOrientation = 1
+        if angle == 90:
+            newOrientation = 6
+        elif angle == 180:
+            newOrientation = 3
+        elif angle == 270:
+            newOrientation = 8
+            
+        EXIFData['Orientation'] = newOrientation
 
-		if newOrientation == 3:
-			image = image.rotate(180, expand=True)
-		elif newOrientation == 6:
-			image = image.rotate(-90, expand=True)
-		elif newOrientation == 8:
-			image = image.rotate(90, expand=True)
+        if newOrientation == 3:
+            image = image.rotate(180, expand=True)
+        elif newOrientation == 6:
+            image = image.rotate(-90, expand=True)
+        elif newOrientation == 8:
+            image = image.rotate(90, expand=True)
 
-		image.save(filePath, exif=EXIFData)
-	except Exception as ex:
-		console.warn('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
-		pass
+        exif_bytes = piexif.dump(EXIFData)
+
+        image.save(filePath, exif=exif_bytes)
+    except Exception as ex:
+        print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
+        pass
 	
 # ------------------------------------------------------------------------------
 
