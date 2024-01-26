@@ -10,6 +10,7 @@ import glob
 import fractions
 import numpy
 import os
+import piexif
 import shutil
 import statistics
 import subprocess
