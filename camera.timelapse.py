@@ -155,7 +155,7 @@ def getFilePath(imageCounter = 1):
 def rotateImage(filePath, angle):
 	try:
 		image = Image.open(filePath)
-		EXIFData = piexif.load(image)
+		EXIFData = piexif.load(filePath)
 
 		newOrientation = 1
 		if angle == 90:
