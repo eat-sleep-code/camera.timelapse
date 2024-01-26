@@ -153,37 +153,34 @@ def getFilePath(imageCounter = 1):
 # ------------------------------------------------------------------------------
 
 def rotateImage(filePath, angle):
-    try:
-        image = Image.open(filePath)
-        EXIFData = {}
+	try:
+		image = Image.open(filePath)
+		
+		exif_dict = piexif.load(image.info.get('exif', b''))
+		
+		newOrientation = 1
+		if angle == 90:
+			newOrientation = 6
+		elif angle == 180:
+			newOrientation = 3
+		elif angle == 270:
+			newOrientation = 8
+		exif_dict['0th'][piexif.ImageIFD.Orientation] = newOrientation
+		
+		exif_bytes = piexif.dump(exif_dict)
+		
+		if angle == 90:
+			image = image.rotate(-90, expand=True)
+		elif angle == 180:
+			image = image.rotate(180, expand=True)
+		elif angle == 270:
+			image = image.rotate(90, expand=True)
+		
+		image.save(filePath, exif=exif_bytes)
+		
+	except Exception as ex:
+		print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
 
-        if hasattr(image, "_getexif") and image._getexif() is not None:
-            EXIFData = dict(image._getexif().items())
-
-        newOrientation = 1
-        if angle == 90:
-            newOrientation = 6
-        elif angle == 180:
-            newOrientation = 3
-        elif angle == 270:
-            newOrientation = 8
-            
-        EXIFData['Orientation'] = newOrientation
-
-        if newOrientation == 3:
-            image = image.rotate(180, expand=True)
-        elif newOrientation == 6:
-            image = image.rotate(-90, expand=True)
-        elif newOrientation == 8:
-            image = image.rotate(90, expand=True)
-
-        exif_bytes = piexif.dump(EXIFData)
-
-        image.save(filePath, exif=exif_bytes)
-    except Exception as ex:
-        print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
-        pass
-	
 # ------------------------------------------------------------------------------
 
 def captureTimelapse():
