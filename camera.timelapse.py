@@ -154,7 +154,6 @@ def getFilePath(imageCounter = 1):
 def rotateImage(filePath, angle):
 	try:
 		image = Image.open(filePath)
-
 		EXIFData = {}
 
 		if hasattr(image, "_getexif") and image._getexif() is not None:
@@ -170,11 +169,18 @@ def rotateImage(filePath, angle):
 			
 		EXIFData[274] = newOrientation
 
-		image.save(filePath, exif=image.info['exif'])
+		if newOrientation == 3:
+			image = image.rotate(180, expand=True)
+		elif newOrientation == 6:
+			image = image.rotate(-90, expand=True)
+		elif newOrientation == 8:
+			image = image.rotate(90, expand=True)
+
+		image.save(filePath, exif=EXIFData)
 	except Exception as ex:
-		console.warn('Could not rotate ' + filePath + ', ' + str(ex))
+		console.warn('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
 		pass
-    
+	
 # ------------------------------------------------------------------------------
 
 def captureTimelapse():
