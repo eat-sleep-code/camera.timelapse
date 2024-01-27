@@ -176,8 +176,6 @@ def rotateImage(filePath, angle):
 		print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
 		pass
 
-
-
 # ------------------------------------------------------------------------------
 
 def captureTimelapse():
