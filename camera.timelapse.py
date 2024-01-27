@@ -120,7 +120,7 @@ darknessThreshold = 35
 # === Data Objects ============================================================
 
 class EXIFData:
-	def __init__(self, FStop, FocalLength, FocalLengthEquivalent, Orientation):
+	def __init__(self, Orientation = 1, FStop = None, FocalLength = None, FocalLengthEquivalent = None):
 
 		self.FStop = FStop
 		self.FocalLength = FocalLength
