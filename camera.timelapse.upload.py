@@ -60,7 +60,7 @@ if os.path.exists('token.json'):
 	creds = Credentials.from_authorized_user_file('token.json', scopes)
 if not creds or not creds.valid:
 	flow = InstalledAppFlow.from_client_secrets_file(clientSecretFile, scopes)
-	creds = flow.run_local_server(port=0)
+	creds = flow.run_local_server()
 	# Save the credentials for the next run
 	with open('token.json', 'w') as token:
 		token.write(creds.to_json())
@@ -83,7 +83,7 @@ privacyStatus = args.privacyStatus
 filePath = args.file
 mediaFile = MediaFileUpload(filePath)
 try:
-	uploadResponse = youtube.videos().insert(
+	uploadRequestBody = youtube.videos().insert(
 		part="snippet,status",
 		body={
 			"snippet": {
@@ -99,6 +99,6 @@ try:
 		media_body=mediaFile,
 	).execute()
 	console.print(f'Successfully uploaded {args.file} to YouTube')
-	console.print(f'Video URL: https://www.youtube.com/watch?v={uploadResponse["id"]}')
+	console.print(f'Video URL: https://www.youtube.com/watch?v={uploadRequestBody["id"]}')
 except HttpError as ex:
 	console.error(f'An error occurred: {ex}')
