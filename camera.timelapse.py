@@ -128,8 +128,8 @@ class EXIFData:
 		self.Orientation = Orientation
 
 EXIFData.FStop = args.exifFStop
-EXIFData.FocalLength = args.FocalLength
-EXIFData.FocalLengthEquivalent = args.FocalLengthEquivalent
+EXIFData.FocalLength = args.exifFocalLength
+EXIFData.FocalLengthEquivalent = args.exifFocalLengthEquivalent
 
 # === Functions ================================================================
 
