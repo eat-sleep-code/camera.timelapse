@@ -34,7 +34,7 @@ echo = Echo()
 camera = Picamera2()
 stillConfiguration = camera.create_still_configuration()
 stillConfiguration['size'] = (1920, 1080)
-stillConfiguration['colourspace'] = ColorSpace.Sycc
+stillConfiguration['color_space'] = ColorSpace.Sycc
 stillConfiguration['bitdepth'] = 12
 
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
