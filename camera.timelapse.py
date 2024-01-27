@@ -32,10 +32,7 @@ except Exception as ex:
 console = Console()
 echo = Echo()
 camera = Picamera2()
-stillConfiguration = camera.create_still_configuration()
-stillConfiguration['size'] = (1920, 1080)
-stillConfiguration['colour_space'] = ColorSpace.Sycc()
-
+stillConfiguration = camera.create_still_configuration(main={"size": (1920, 1080)})
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 
 
