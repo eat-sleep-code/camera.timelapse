@@ -127,10 +127,10 @@ class EXIFData:
 		self.FocalLengthEquivalent = FocalLengthEquivalent
 		self.Orientation = Orientation
 
-EXIFData = EXIFData()
-EXIFData.FStop = args.exifFStop
-EXIFData.FocalLength = args.exifFocalLength
-EXIFData.FocalLengthEquivalent = args.exifFocalLengthEquivalent
+EXIFDataOverride = EXIFData()
+EXIFDataOverride.FStop = args.exifFStop
+EXIFDataOverride.FocalLength = args.exifFocalLength
+EXIFDataOverride.FocalLengthEquivalent = args.exifFocalLengthEquivalent
 
 # === Functions ================================================================
 
@@ -169,7 +169,7 @@ def getFilePath(imageCounter = 1):
 
 def postProcessImage(filePath, angle):
 
-	global EXIFData
+	global EXIFDataOverride
 
 	try:
 		image = Image.open(filePath)
@@ -186,18 +186,18 @@ def postProcessImage(filePath, angle):
 			elif angle == 270:
 				newOrientation = 8
 				image = image.rotate(90, expand=True)
-			EXIFData.Orientation = newOrientation
+			EXIFDataOverride.Orientation = newOrientation
 				
-			FileEXIFData['Orientation'] = EXIFData.Orientation
+			FileEXIFData['Orientation'] = EXIFDataOverride.Orientation
 
-		if EXIFData.FStop is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = EXIFData.FStop
+		if EXIFDataOverride.FStop is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = EXIFDataOverride.FStop
 		
-		if EXIFData.FocalLength is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFData.FocalLength, 1)
+		if EXIFDataOverride.FocalLength is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFDataOverride.FocalLength, 1)
 		
-		if EXIFData.FocalLengthEquivalent is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = EXIFData.FocalLengthEquivalent
+		if EXIFDataOverride.FocalLengthEquivalent is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = EXIFDataOverride.FocalLengthEquivalent
 
 		EXIFBytes = piexif.dump(FileEXIFData)
 		image.save(filePath, exif=EXIFBytes)
