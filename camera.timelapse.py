@@ -127,6 +127,7 @@ class EXIFData:
 		self.FocalLengthEquivalent = FocalLengthEquivalent
 		self.Orientation = Orientation
 
+EXIFData = EXIFData()
 EXIFData.FStop = args.exifFStop
 EXIFData.FocalLength = args.exifFocalLength
 EXIFData.FocalLengthEquivalent = args.exifFocalLengthEquivalent
