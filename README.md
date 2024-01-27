@@ -33,6 +33,9 @@ camera.timelapse <options>
 + _--interval_ : Set the timelapse interval    *(default: 10)*
 + _--framerate_ : Set the output framerate     *(default: 60)*
 + _--rotate_ : Rotate the camera in 90&deg; increments     *(default: 0)*
++ _--exifFStop : Set the numeric F-Stop value in the image EXIF data *(default: Not specified)*
++ _--exifFocalLength : Set the numeric Focal Length value (mm) in the image EXIF data *(default: Not specified)*
++ _--exifFocalLengthEquivalent : Set the numeric 35mm Focal Length value (mm) in the image EXIF data *(default: Not specified)*
 + _--outputFolder_ : Set the folder where images will be saved     *(default: dcim/)*
 + _--retention_ : Set the number of days to locally retain the captured files    *(default: 7)*
 + _--waitUntilAnalysis_ : Set whether to perform an initial analysis.     *(default: False)*

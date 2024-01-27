@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 
-version = '2024.01.26'
+version = '2024.01.27'
 
 
 # Kill other camera script(s)
@@ -42,6 +42,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--interval', dest='interval', help='Set the timelapse interval', type=int)
 parser.add_argument('--framerate', dest='framerate', help='Set the output framerate', type=int)
 parser.add_argument('--rotate', dest='rotate', help='Rotate the camera in 90* increments', type=int)
+parser.add_argument('--exifFStop', dest='rotate', help='Set the numeric F-Stop value in the image EXIF data', type=float)
+parser.add_argument('--exifFocalLength', dest='rotate', help='Set the numeric Focal Length value (mm) in the image EXIF data', type=float)
+parser.add_argument('--exifFocalLengthEquivalent', dest='rotate', help='Set the numeric 35mm Focal Length value (mm) in the image EXIF data', type=float)
 parser.add_argument('--outputFolder', dest='outputFolder', help='Set the folder where images will be saved', type=str)
 parser.add_argument('--retention', dest='retention', help='Set the number of days to locally retain the captured files', type=int)
 parser.add_argument('--waitUntilAnalysis', dest='waitUntilAnalysis', help='Set whether to perform an initial analysis', type=bool)
@@ -114,6 +117,19 @@ brightnessThreshold = 125
 darknessThreshold = 35
 	
 
+# === Data Objects ============================================================
+
+class EXIFData:
+	def __init__(self, FStop, FocalLength, FocalLengthEquivalent, Orientation):
+
+		self.FStop = FStop
+		self.FocalLength = FocalLength
+		self.FocalLengthEquivalent = FocalLengthEquivalent
+		self.Orientation = Orientation
+
+EXIFData.FStop = args.exifFStop
+EXIFData.FocalLength = args.FocalLength
+EXIFData.FocalLengthEquivalent = args.FocalLengthEquivalent
 
 # === Functions ================================================================
 
@@ -150,25 +166,39 @@ def getFilePath(imageCounter = 1):
 
 # ------------------------------------------------------------------------------
 
-def rotateImage(filePath, angle):
+def postProcessImage(filePath, angle):
+
+	global EXIFData
+
 	try:
 		image = Image.open(filePath)
-		EXIFData = piexif.load(filePath)
+		FileEXIFData = piexif.load(filePath)
 
-		newOrientation = 1
-		if angle == 90:
-			newOrientation = 6
-			image = image.rotate(-90, expand=True)
-		elif angle == 180:
-			newOrientation = 3
-			image = image.rotate(180, expand=True)
-		elif angle == 270:
-			newOrientation = 8
-			image = image.rotate(90, expand=True)
-			
-		EXIFData['Orientation'] = newOrientation
-		EXIFBytes = piexif.dump(EXIFData)
+		if angle > 0:
+			newOrientation = 1
+			if angle == 90:
+				newOrientation = 6
+				image = image.rotate(-90, expand=True)
+			elif angle == 180:
+				newOrientation = 3
+				image = image.rotate(180, expand=True)
+			elif angle == 270:
+				newOrientation = 8
+				image = image.rotate(90, expand=True)
+			EXIFData.Orientation = newOrientation
+				
+			FileEXIFData['Orientation'] = EXIFData.Orientation
 
+		if EXIFData.FStop is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = EXIFData.Fstop
+		
+		if EXIFData.FocalLength is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFData.FocalLength, 1)
+		
+		if EXIFData.FocalLengthEquivalent is not None:
+			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = EXIFData.FocalLengthEquivalent
+
+		EXIFBytes = piexif.dump(FileEXIFData)
 		image.save(filePath, exif=EXIFBytes)
 	except Exception as ex:
 		print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
@@ -218,9 +248,7 @@ def captureTimelapse():
 				if os.path.exists(filePath):
 					if os.stat(filePath).st_size > 1000:
 						counter += 1 # Only increment if file exists and is greater than 1KB in size (no timelapse worthy mage is likely to be smaller).
-						# If rotation was specified, call method to alter EXIF data
-						if rotate > 0:
-							rotateImage(filePath, rotate)
+						postProcessImage(filePath, rotate)
 					else:
 						console.warn(str(filePath) + ' was too small (' + str(os.stat(filePath).st_size) + ')...')
 						os.remove(filePath); # Remove existing files that are too small	
