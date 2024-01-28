@@ -1,27 +1,36 @@
-import os
-import json
 import argparse
+import httplib2
+import os
+import random
+import sys
+import time
+
 from functions import Console
-from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaFileUpload
-from moviepy.video.io.VideoFileClip import VideoFileClip
+from apiclient.discovery import build
+from apiclient.errors import HttpError
+from apiclient.http import MediaFileUpload
+from oauth2client.client import flow_from_clientsecrets
+from oauth2client.file import Storage
+from oauth2client.tools import run_flow
 
 
 console = Console()
-
+httplib2.RETRIES = 1
 
 # === API Setup ===============================================================
 
-clientSecretFile = '/home/pi/camera.timelapse/config.json'
-scopes = ['https://www.googleapis.com/auth/youtube.upload']
+clientSecretsFile = '/home/pi/camera.timelapse/config.json'
+missingClientSecretsMessage = 'Could not locate client secrets file!'
+tokenFile = '/home/pi/camera.timelapse/token.json'
+apiScopes = ['https://www.googleapis.com/auth/youtube.upload']
 apiServiceName = 'youtube'
 apiVersion = 'v3'
 
-
+httplib2.RETRIES = 1
+maxRetries = 10
+retriableExceptions = (httplib2.HttpLib2Error, IOError)
+retriableStatusCodes = [500, 502, 503, 504]
+validPrivacyStatuses = ('public', 'private', 'unlisted')
 
 # === Argument Handling =======================================================
 
@@ -36,69 +45,91 @@ args = parser.parse_args()
 
 
 
-# === Check If Video Exists And Is At Least 30 Seconds Long ===================
+# === Authentication ==========================================================
 
-if not os.path.isfile(args.file):
-	console.error(f'Error: {args.file} does not exist or is not a file')
-	exit()
+def getAuthenticatedService(args):
+	flow = flow_from_clientsecrets(clientSecretsFile, scope=apiScopes, message=missingClientSecretsMessage)
 
-ignoreLength = args.ignoreLength or False
-if ignoreLength:
-	console.warn(f'Skipping length check for {args.file}')
-else:
-	videoDuration = VideoFileClip(args.file).duration
-	if videoDuration < 30:
-		console.error(f'Error: {args.file} is less than 30 seconds long')
-		exit()
+	storage = Storage(tokenFile)
+	credentials = storage.get()
+	args.noauth_local_webserver = True
+	args.logging_level = 'ERROR'
+	if credentials is None or credentials.invalid:
+		credentials = run_flow(flow, storage, args)
 
+	return build(apiServiceName, apiVersion, http=credentials.authorize(httplib2.Http()))
 
 
-# === Authenticate With YouTube Using The Installed Application Flow ==========
+# === Upload: Initialization ==================================================
 
-creds = None
-if os.path.exists('token.json'):
-	creds = Credentials.from_authorized_user_file('token.json', scopes)
-if not creds or not creds.valid:
-	flow = InstalledAppFlow.from_client_secrets_file(clientSecretFile, scopes)
-	creds = flow.run_local_server()
-	# Save the credentials for the next run
-	with open('token.json', 'w') as token:
-		token.write(creds.to_json())
+def initializeUpload(youtube, options):
+	tags = None
+	if options.keywords:
+		tags = options.keywords.split(',')
+
+	body = dict(
+		snippet=dict(
+			title=options.title,
+			description=options.description,
+			tags=tags,
+			categoryId=options.category
+		),
+		status=dict(
+			privacyStatus=options.privacyStatus
+		)
+	)
+
+	uploadRequest = youtube.videos().insert(
+		part=','.join(body.keys()),
+		body=body, 
+		media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True)
+	)
+
+	resumableUpload(uploadRequest)
 
 
+# === Upload: Resumable =======================================================
 
-# === Prepare Video ===========================================================
+def resumableUpload(uploadRequest):
+	response = None
+	error = None
+	retry = 0
+	while response is None:
+		try:
+			console.info('Uploading file...')
+			status, response = uploadRequest.next_chunk()
+			if response is not None:
+				if 'id' in response:
+					console.info('Video id ' +  str(response['id']) + ' was successfully uploaded.')
+				else:
+					exit('The upload failed with an unexpected response: ' + response)
+		except HttpError as ex:
+			if ex.resp.status in retriableStatusCodes:
+				error = 'A retriable HTTP error ' + str(ex.resp.status) + ' occurred:\n' + str(ex.content)
+			else:
+				raise
+		except retriableExceptions as ex:
+			error = 'A retriable error occurred: ' + str(ex)
 
-youtube = build(apiServiceName, apiVersion, credentials=creds)
+		if error is not None:
+			console.info(error)
+			retry += 1
+			if retry > maxRetries:
+				exit('No longer attempting to retry.')
 
-title = args.title
-description = args.description
-category = args.category
-tags = []
-privacyStatus = args.privacyStatus
+			maxSleep = 2 ** retry
+			sleepSeconds = random.random() * maxSleep
+			console.info('Sleeping ' + str(sleepSeconds) + ' seconds and then retrying...')
+			time.sleep(sleepSeconds)
 
 
-# === Upload Video ============================================================
+# -----------------------------------------------------------------------------
 
-filePath = args.file
-mediaFile = MediaFileUpload(filePath)
+if not os.path.exists(args.file):
+	exit('Please specify a valid file using the --file= parameter.')
+
+youtube = getAuthenticatedService(args)
 try:
-	uploadRequestBody = youtube.videos().insert(
-		part="snippet,status",
-		body={
-			"snippet": {
-				"title": title,
-				"description": description,
-				"tags": tags,
-				"categoryId": category
-			},
-			"status": {
-				"privacyStatus": privacyStatus,
-			},
-		},
-		media_body=mediaFile,
-	).execute()
-	console.print(f'Successfully uploaded {args.file} to YouTube')
-	console.print(f'Video URL: https://www.youtube.com/watch?v={uploadRequestBody["id"]}')
+	initializeUpload(youtube, args)
 except HttpError as ex:
-	console.error(f'An error occurred: {ex}')
+	console.error('An HTTP error ' + str(ex.resp.status) + ' occurred:\n' + str(ex.content))

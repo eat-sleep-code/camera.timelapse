@@ -7,7 +7,7 @@ echo -e ''
 echo -e '\033[93mCreating temporary file... \033[0m'
 sudo touch ~/dcim/youtube-device-trust.mp4
 
-python3 ~/camera.timelapse/echo-server.py &
+# python3 ~/camera.timelapse/echo-server.py &
 
 echo -e '\033[93mStarting verification process... \033[0m'
 python3 ~/camera.timelapse/camera.timelapse.upload.py --file ~/dcim/youtube-device-trust.mp4 --ignoreLength True
