@@ -192,9 +192,9 @@ def postProcessImage(filePath, angle):
 			FileEXIFData['Orientation'] = EXIFDataOverride.Orientation
 
 		if EXIFDataOverride.FStop is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = EXIFDataOverride.FStop
 			console.info(str(EXIFDataOverride.FStop))
-		
+			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = (int(EXIFDataOverride.FStop * 100), 100)
+			
 		if EXIFDataOverride.FocalLength is not None:
 			#FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFDataOverride.FocalLength, 1)
 			console.info(str(EXIFDataOverride.FocalLength, 1))
