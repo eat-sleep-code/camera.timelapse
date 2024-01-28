@@ -199,7 +199,7 @@ def postProcessImage(filePath, angle):
 			
 		if EXIFDataOverride.FocalLengthEquivalent is not None:
 			console.info(str(EXIFDataOverride.FocalLengthEquivalent) + ' BEFORE')
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = (EXIFDataOverride.FocalLengthEquivalent, 1)
+			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = int(EXIFDataOverride.FocalLengthEquivalent)
 			console.info(str(EXIFDataOverride.FocalLengthEquivalent) + ' AFTER')
 
 		EXIFBytes = piexif.dump(FileEXIFData)
