@@ -1,5 +1,5 @@
 # Camera (Timelapse)
-Take timelapse photos with a Raspberry Pi camera and automatically generate an MP4 on a daily basis.  Optionally upload the daily timelapse to YouTube.
+Take timelapse photos with a Raspberry Pi camera and automatically generate an MP4 on a daily basis.  ~~Optionally upload the daily timelapse to YouTube.~~
 
 ---
 
@@ -56,12 +56,9 @@ camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalL
 
 ## Automatic YouTube Upload
 
-To use the automatic YouTube upload feature, you will need to: 
-+ Obtain an OAuth 2.0 client ID and client secret from the [Google Developers Console](https://console.developers.google.com/apis/credentials)
-+ Add the appropriate values into a config.json file (see example file)
+> [!IMPORTANT]
+Due to restrictive changes in the YouTube authentication rules, the automatic YouTube upload feature is not currently operational.   We are actively researching alternative methods.
 
-> [!TIP] 
-> These steps are _only_ required if you wish to use the automatic upload feature.
 
 ---
 

@@ -1,13 +1,22 @@
-import socket
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import socketserver
+import threading
 
-HOST = '127.0.0.1' 
-PORT = 5000
+class OAuthCallbackHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+        self.wfile.write(b"<html><head><title>Authentication Successful</title></head>")
+        self.wfile.write(b"<body><h1>Authentication Successful</h1></body></html>")
+        
+        threading.Thread(target=self.server.shutdown).start()
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.bind((HOST, PORT))
-    s.listen()
-    conn, addr = s.accept()
-    with conn:
-        while True:
-            data = conn.recv(1024)
-            conn.sendall(data)
+def RunServer():
+    with socketserver.TCPServer(("", 8080), OAuthCallbackHandler) as httpd:
+        print("Server started at http://localhost:8080")
+        httpd.serve_forever()
+
+# Start the server in a separate thread
+serverThread = threading.Thread(target=RunServer)
+serverThread.start()

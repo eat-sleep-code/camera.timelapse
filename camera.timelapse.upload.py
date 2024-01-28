@@ -6,12 +6,11 @@ import sys
 import time
 
 from functions import Console
-from apiclient.discovery import build
-from apiclient.errors import HttpError
-from apiclient.http import MediaFileUpload
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
-from oauth2client.tools import run_flow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
 
 
 console = Console()
@@ -48,16 +47,18 @@ args = parser.parse_args()
 # === Authentication ==========================================================
 
 def getAuthenticatedService(args):
-	flow = flow_from_clientsecrets(clientSecretsFile, scope=apiScopes, message=missingClientSecretsMessage)
-
-	storage = Storage(tokenFile)
-	credentials = storage.get()
-	args.noauth_local_webserver = True
-	args.logging_level = 'ERROR'
-	if credentials is None or credentials.invalid:
-		credentials = run_flow(flow, storage, args)
-
-	return build(apiServiceName, apiVersion, http=credentials.authorize(httplib2.Http()))
+	apiTokenCredentials = None
+	if os.path.exists(tokenFile):
+		apiTokenCredentials = Credentials.from_authorized_user_file('tokenFile', apiScopes)
+	if not apiTokenCredentials or not apiTokenCredentials.valid:
+		if apiTokenCredentials and apiTokenCredentials.expired and apiTokenCredentials.refresh_token:
+			apiTokenCredentials.refresh(Request())
+		else:
+			flow = InstalledAppFlow.from_client_secrets_file(clientSecretsFile, apiScopes)
+			apiTokenCredentials = flow.run_local_server(port=0)
+		with open(tokenFile, 'w') as token:
+			token.write(apiTokenCredentials.to_json())
+	return build(apiServiceName, apiVersion, credentials=apiTokenCredentials, static_discovery=False)
 
 
 # === Upload: Initialization ==================================================
