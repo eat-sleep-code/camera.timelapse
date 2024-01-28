@@ -43,6 +43,15 @@ camera.timelapse <options>
 + _--uploadVideo_ : Set whether to automatically upload videos to YouTube    *(default: False)*
 + _--privacy_ : Set the privacy status of the YouTube video  *(default: public)*
 
+
+### Example
+```
+camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalLengthEquivalent --retention 14 --uploadVideo True
+```
+
+> [!TIP]
+> The EXIF data shown above is completely optional but may prove useful when using captured images with third-party applications such as photogrammetry software.
+
 ---
 
 ## Automatic YouTube Upload
@@ -51,7 +60,8 @@ To use the automatic YouTube upload feature, you will need to:
 + Obtain an OAuth 2.0 client ID and client secret from the [Google Developers Console](https://console.developers.google.com/apis/credentials)
 + Add the appropriate values into a config.json file (see example file)
 
-NOTE: These steps are _only_ required if you wish to use the automatic upload feature.
+> [!TIP] 
+> These steps are _only_ required if you wish to use the automatic upload feature.
 
 ---
 
@@ -74,7 +84,11 @@ This can be achieved by executing `sudo nano /boot/config.txt` and adding the fo
 awb_auto_is_greyworld=1
 ```
 
-Also note, that while IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more to take advantage of an Infrared Camera.
+> [!NOTE]
+> While IR cameras utilize "invisible" (outside the spectrum of the human eye) light, they can not magically see in the dark.   You will need to illuminate night scenes with one or more to take advantage of an Infrared Camera.
 
 ---
-:information_source: *This application was developed using a Raspberry Pi HQ (2020) camera and Raspberry Pi 4B boards. It has also been tested using v3.x Raspberry Pi 12MP cameras and Pi Zero 2W boards.   Issues may arise if you are using either third party or older hardware.*
+
+> [!IMPORTANT]
+> *This application was developed using a Raspberry Pi V3 12MP (2023) camera and a Raspberry Pi Zero 2 W board.   This application should also work without issue with Raspberry Pi 5 boards, Raspberry Pi 4B boards and Raspberry Pi HQ (2020) cameras.   Issues may arise if you are using either third party or older hardware.*
+

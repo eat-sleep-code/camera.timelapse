@@ -133,6 +133,7 @@ EXIFDataOverride.FStop = args.exifFStop
 EXIFDataOverride.FocalLength = args.exifFocalLength
 EXIFDataOverride.FocalLengthEquivalent = args.exifFocalLengthEquivalent
 
+
 # === Functions ================================================================
 
 def getFileName(imageCounter = 1):
