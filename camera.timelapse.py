@@ -197,8 +197,8 @@ def postProcessImage(filePath, angle):
 		if EXIFDataOverride.FocalLength is not None:
 			FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFDataOverride.FocalLength, 1)
 			
-		if EXIFDataOverride.FocalLengthEquivalent is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = EXIFDataOverride.FocalLengthEquivalent
+		#if EXIFDataOverride.FocalLengthEquivalent is not None:
+			#FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = EXIFDataOverride.FocalLengthEquivalent
 			
 		EXIFBytes = piexif.dump(FileEXIFData)
 		image.save(filePath, exif=EXIFBytes)
