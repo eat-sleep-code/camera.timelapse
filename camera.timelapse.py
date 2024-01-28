@@ -191,21 +191,23 @@ def postProcessImage(filePath, angle):
 				
 			FileEXIFData['Orientation'] = EXIFDataOverride.Orientation
 
-		if EXIFDataOverride.FStop is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = (int(EXIFDataOverride.FStop * 100), 100)
-			
-		if EXIFDataOverride.FocalLength is not None:
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFDataOverride.FocalLength, 1)
-			
-		if EXIFDataOverride.FocalLengthEquivalent is not None:
-			console.info(str(EXIFDataOverride.FocalLengthEquivalent) + ' BEFORE')
-			FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = int(EXIFDataOverride.FocalLengthEquivalent)
-			console.info(str(EXIFDataOverride.FocalLengthEquivalent) + ' AFTER')
+		try:
+			if EXIFDataOverride.FStop is not None:
+				FileEXIFData['Exif'][piexif.ExifIFD.FNumber] = (int(EXIFDataOverride.FStop * 100), 100)
+				
+			if EXIFDataOverride.FocalLength is not None:
+				FileEXIFData['Exif'][piexif.ExifIFD.FocalLength] = (EXIFDataOverride.FocalLength, 1)
+				
+			if EXIFDataOverride.FocalLengthEquivalent is not None:
+				FileEXIFData['Exif'][piexif.ExifIFD.FocalLengthIn35mmFilm] = int(EXIFDataOverride.FocalLengthEquivalent)
+		except Exception as ex:
+			console.warn('Could not rotate apply additional EXIF data to image.   Please check supplied data. ' + str(ex))
+			pass
 
 		EXIFBytes = piexif.dump(FileEXIFData)
 		image.save(filePath, exif=EXIFBytes)
 	except Exception as ex:
-		print('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
+		console.warn('Could not rotate ' + filePath + ' ' + str(angle) + ' degrees. ' + str(ex))
 		pass
 
 # ------------------------------------------------------------------------------
