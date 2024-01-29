@@ -1,5 +1,5 @@
 # Camera (Timelapse)
-Take timelapse photos with a Raspberry Pi camera and automatically generate an MP4 on a daily basis.  ~~Optionally upload the daily timelapse to YouTube.~~
+Take timelapse photos with a Raspberry Pi camera and automatically generate an MP4 on a daily basis.  Optionally upload the daily timelapse to YouTube.
 
 ---
 
@@ -56,10 +56,20 @@ camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalL
 
 ## Automatic YouTube Upload
 
-> [!IMPORTANT]
-Due to restrictive changes in the YouTube authentication rules, the automatic YouTube upload feature is not currently operational.   We are actively researching alternative methods.
-
-
+- Copy [config.json.example](config.json.example) to a new file called __config.json__.
+- Sign in to the [Google APIs & Services](https://console.cloud.google.com/apis/dashboard) console.
+- If necessary, create a new Project.
+- Expand the left menu and select the __Enabled APIs & services__ menu item.
+- Click the __+ ENABLE APIS AND SERVICES__ button.
+- Search for &ndash; and enable &ndash; the __YouTube Data API v3__.
+- Select the __Credentials__ menu item from the left menu.
+- Click the __+ CREATE CREDENTIALS__ button and select __OAuth client ID__ from the dropdown menu that appears.
+- :heavy_exclamation_mark: Select __Desktop app__ from the __Application Type__ dropdown menu.  Selecting any other option from the list will make authentication impossible. :heavy_exclamation_mark:
+- Enter an appropriate value in the __Name__ field and click the Submit button.   
+- From the screen that appears, copy the Client ID and Client Secret and paste them in the appropriate places within the config.json file you created in the first step.
+- Open a terminal and execute `./camera.timelapse/setup-youtube-device-trust.sh`.  You will be prompted to open a link in the browser.
+- You will receive a warning about only continuing if you trust the requestor.   If you trust yourself, advance to the final step to complete the authentication process.
+- Be sure to set __--uploadVideo__ to __True__ when you launch `camera.timelapse` to automatically upload the new videos after they are created each day.
 ---
 
 ## Autostart Timelapse Sequence

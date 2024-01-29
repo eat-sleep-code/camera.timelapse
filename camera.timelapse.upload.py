@@ -11,6 +11,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from apiclient.http import MediaFileUpload
 
 
 console = Console()
@@ -37,6 +38,7 @@ parser = argparse.ArgumentParser(description='Upload a video to YouTube')
 parser.add_argument('-f', '--file', type=str, help='Path to the video file')
 parser.add_argument('-t', '--title', type=str, default='Timelapse', help='Title of the video')
 parser.add_argument('-d', '--description', type=str, default='Timelapse Video', help='Description of the video')
+parser.add_argument('-k', '--keywords', type=str, default='timelapse', help='Comma-seperated list of keywords')
 parser.add_argument('-c', '--category', type=str, default='22', help='Category of the video')
 parser.add_argument('-p', '--privacyStatus', type=str, default='public', choices=['public', 'private', 'unlisted'], help='Privacy status of the video (public, private, or unlisted)')
 parser.add_argument('--ignoreLength',type=bool, default=False, help='')
@@ -49,7 +51,7 @@ args = parser.parse_args()
 def getAuthenticatedService(args):
 	apiTokenCredentials = None
 	if os.path.exists(tokenFile):
-		apiTokenCredentials = Credentials.from_authorized_user_file('tokenFile', apiScopes)
+		apiTokenCredentials = Credentials.from_authorized_user_file(tokenFile, apiScopes)
 	if not apiTokenCredentials or not apiTokenCredentials.valid:
 		if apiTokenCredentials and apiTokenCredentials.expired and apiTokenCredentials.refresh_token:
 			apiTokenCredentials.refresh(Request())
@@ -68,25 +70,25 @@ def initializeUpload(youtube, options):
 	if options.keywords:
 		tags = options.keywords.split(',')
 
-	body = dict(
-		snippet=dict(
-			title=options.title,
-			description=options.description,
-			tags=tags,
-			categoryId=options.category
-		),
-		status=dict(
-			privacyStatus=options.privacyStatus
+		body = dict(
+			snippet=dict(
+				title=options.title,
+				description=options.description,
+				tags=tags,
+				categoryId=options.category
+			),
+			status=dict(
+				privacyStatus=options.privacyStatus
+			)
 		)
-	)
 
-	uploadRequest = youtube.videos().insert(
-		part=','.join(body.keys()),
-		body=body, 
-		media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True)
-	)
+		uploadRequest = youtube.videos().insert(
+			part=','.join(body.keys()),
+			body=body, 
+			media_body=MediaFileUpload(options.file, chunksize=-1, resumable=True)
+		)
 
-	resumableUpload(uploadRequest)
+		resumableUpload(uploadRequest)
 
 
 # === Upload: Resumable =======================================================
