@@ -16,7 +16,7 @@ Take timelapse photos with a Raspberry Pi camera and automatically generate an M
 
 Installation of the program, as well as any software prerequisites, can be completed with the following two-line install script.
 
-```
+```bash
 wget -q https://raw.githubusercontent.com/eat-sleep-code/camera.timelapse/master/install-camera.timelapse.sh -O ~/install-camera.timelapse.sh
 sudo chmod +x ~/install-camera.timelapse.sh && ~/install-camera.timelapse.sh
 ```
@@ -24,7 +24,7 @@ sudo chmod +x ~/install-camera.timelapse.sh && ~/install-camera.timelapse.sh
 ---
 
 ## Usage
-```
+```bash
 camera.timelapse <options>
 ```
 
@@ -45,8 +45,8 @@ camera.timelapse <options>
 
 
 ### Example
-```
-camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalLengthEquivalent 16 --retention 14 --uploadVideo True
+```bash
+camera.timelapse --rotate 180 --exifFStop 2.2 --exifFocalLength 2.75 --exifFocalLengthEquivalent 16 --retention 14 --uploadVideo True
 ```
 
 > [!TIP]
@@ -86,7 +86,7 @@ If you are using an infrared (IR) camera, you will need to modify the Auto White
 
 This can be achieved by executing `sudo nano /boot/config.txt` and adding the following lines.
 
-```
+```bash
 # Camera Settings 
 awb_auto_is_greyworld=1
 ```
