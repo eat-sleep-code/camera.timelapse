@@ -46,7 +46,7 @@ camera.timelapse <options>
 
 ### Example
 ```
-camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalLengthEquivalent --retention 14 --uploadVideo True
+camera.timelapse --rotate 180 -exifFStop 2.2 --exifFocalLength 2.75 --exifFocalLengthEquivalent 16 --retention 14 --uploadVideo True
 ```
 
 > [!TIP]
