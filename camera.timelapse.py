@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 
-version = '2024.01.28'
+version = '2024.02.02'
 
 
 # Kill other camera script(s)
@@ -32,6 +32,7 @@ except Exception as ex:
 console = Console()
 echo = Echo()
 camera = Picamera2()
+camera.set_logging(Picamera2.ERROR)
 stillConfiguration = camera.create_still_configuration(main={"size": (1920, 1080)})
 camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 
@@ -355,7 +356,7 @@ def convertSequenceToVideo(dateToConvert):
 			try:		
 				console.info('Uploading video to YouTube... ')	
 				uploadDescription = 'Timelapse for ' + dateToConvert.strftime('%Y-%m-%d')
-				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title "' + dateToConvertStamp + '" --description "' + uploadDescription + '" --privacyStatus "' + privacy + '" --noauth_local_webserver ' , shell=True)
+				subprocess.call('python3 camera.timelapse/camera.timelapse.upload.py --file ' + outputFolder + outputFilePath + ' --title "' + dateToConvertStamp + '" --description "' + uploadDescription + '" --privacyStatus "' + privacy + '"' , shell=True)
 			except Exception as ex:
 				console.warn('YouTube upload may have failed! ' + str(ex) ) 
 				pass
