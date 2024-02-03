@@ -36,6 +36,7 @@ sudo chmod +x camera.timelapse.upload.py
 sudo chmod +x echo-server.py
 sudo mkdir -p ~/dcim
 sudo chown -R $USER:$USER ~/dcim
+sudo chown -R $USER:$USER ~/logs
 
 
 echo ''
