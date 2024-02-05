@@ -96,6 +96,11 @@ awb_auto_is_greyworld=1
 
 ---
 
+> [!TIP]
+> If you are using a Raspberry Pi with 1GB &ndash; or less &ndash; of memory, you may wish to increase your SWAP file to match your memory size as outlined in this [third-party guide](https://pimylifeup.com/raspberry-pi-swap-file/).
+
+---
+
 > [!IMPORTANT]
-> *This application was developed using a Raspberry Pi V3 12MP (2023) camera and a Raspberry Pi Zero 2 W board.   This application should also work without issue with Raspberry Pi 5 boards, Raspberry Pi 4B boards and Raspberry Pi HQ (2020) cameras.   Issues may arise if you are using either third party or older hardware.*
+> *This application was developed using a Raspberry Pi V3 12MP (2023) camera and a Raspberry Pi Zero 2 W board.   This application should also work without issue with Raspberry Pi 5, Raspberry Pi 4B, Raspberry Pi 3B and 3A, and Raspberry Pi Zero W boards.   This application should also work with Raspberry Pi HQ (2020) cameras.   Issues may arise if you are using either third party or older hardware.*
 

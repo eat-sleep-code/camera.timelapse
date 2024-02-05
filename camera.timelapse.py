@@ -18,7 +18,7 @@ import sys
 import threading
 import time
 
-version = '2024.02.03'
+version = '2024.02.05'
 
 
 # Kill other camera script(s)
@@ -34,8 +34,12 @@ echo = Echo()
 camera = Picamera2()
 camera.set_logging(Picamera2.ERROR)
 stillConfiguration = camera.create_still_configuration(main={"size": (1920, 1080)})
-camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-
+try:
+	camera.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+except Exception as ex:
+	console.info('Camera does not support autofocus.')
+	time.sleep(3)
+	pass
 
 # === Argument Handling ========================================================
 
@@ -272,6 +276,8 @@ def analyzeLastImages():
 	global interval
 	global framerate
 	global waitUntilAnalysisStatus
+	global darknessThreshold
+	global brightnessThreshold
  	
 	try:
 		time.sleep(interval * 1.5) 
@@ -308,20 +314,20 @@ def analyzeLastImages():
 							console.info('Exiting long exposure mode based on analysis of last image set...  ')
 							camera.framerate = 30
 
-					if measuredAverageBrightness > (brightnessThreshold + 25) and measuredAverageBrightness > -1:
-						if camera.shutter_speed == 0 or camera.shutter_speed > 1000: 
-							console.info('Increasing shutter speed based on analysis of last image set... [1000]')
-							camera.shutter_speed = 1000
-						elif camera.shutter_speed > 100:
-							console.info('Increasing shutter speed based on analysis of last image set... [50]')
-							camera.shutter_speed = 50
-					elif measuredAverageBrightness < (brightnessThreshold - 25):
-						if camera.shutter_speed < 100 and camera.shutter_speed != 0:
-							console.info('Decreasing shutter speed based on analysis of last image set... [1000]')
-							camera.shutter_speed = 1000
-						elif camera.shutter_speed > 900: 
-							console.info('Setting shutter speed to "auto" based on analysis of last image set... ')
-							camera.shutter_speed = 0 # Auto
+						if measuredAverageBrightness > (brightnessThreshold + 25) and measuredAverageBrightness > -1:
+							if camera.shutter_speed == 0 or camera.shutter_speed > 1000: 
+								console.info('Increasing shutter speed based on analysis of last image set... [1000]')
+								camera.shutter_speed = 1000
+							elif camera.shutter_speed > 100:
+								console.info('Increasing shutter speed based on analysis of last image set... [50]')
+								camera.shutter_speed = 50
+						elif measuredAverageBrightness < (brightnessThreshold - 25):
+							if camera.shutter_speed < 100 and camera.shutter_speed != 0:
+								console.info('Decreasing shutter speed based on analysis of last image set... [1000]')
+								camera.shutter_speed = 1000
+							elif camera.shutter_speed > 900: 
+								console.info('Setting shutter speed to "auto" based on analysis of last image set... ')
+								camera.shutter_speed = 0 # Auto
 					
 					measuredBrightnessList.clear()
 
