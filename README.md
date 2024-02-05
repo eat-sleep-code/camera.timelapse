@@ -5,7 +5,7 @@ Take timelapse photos with a Raspberry Pi camera and automatically generate an M
 
 ## Getting Started
 
-- Use [Raspberry Pi Imager](https://www.raspberrypi.com/software) to install Raspberry Pi OS 64-bit Lite *(Bookworm)* on a microSD card
+- Use [Raspberry Pi Imager](https://www.raspberrypi.com/software) to install Raspberry Pi OS Lite *(Bookworm)* on a microSD card
 - Use [raspi-config](https://www.raspberrypi.org/documentation/configuration/raspi-config.md) to:
   - Enable the CSI camera interface
   - Set up your WiFi connection
